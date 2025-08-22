@@ -8,20 +8,30 @@
 - OAuth protection with appsettings/IOptions toggle; prepare for feature flags
 
 ### Detailed Steps
-1) OpenAPI & Health
-- Add Swashbuckle; expose swagger-ui in dev; OpenAPI doc versioning
-- Add ASP.NET Core Health Checks; liveness/readiness endpoints
 
-2) Logging
-- Configure structured logging (Serilog or Microsoft.Extensions.Logging with JSON console)
-- Provide configuration for Elastic/Splunk sink without hard dependency
+1) **OpenAPI & Health Checks**
+   - Add Swashbuckle.AspNetCore with OpenAPI 3.0+ specification
+   - Configure Swagger UI for development environment with API versioning support
+   - Implement ASP.NET Core Health Checks with separate liveness (`/health/live`) and readiness (`/health/ready`) endpoints
+   - Add health check for database connectivity and external service dependencies
 
-3) OpenTelemetry
-- Add OTel SDK; exporters (console/OTLP configurable); trace ID correlation with logs
+2) **Structured Logging**
+   - Configure Serilog with structured JSON logging for console output
+   - Add correlation ID middleware for request tracing across services
+   - Prepare configuration for Elasticsearch/Splunk sinks without hard dependencies
+   - Implement log enrichment with user context, request details, and performance metrics
 
-4) Security
-- Add OAuth/JWT authentication & authorization policies
-- Implement IOptions toggle to disable auth for local/dev; register feature flag abstraction
+3) **OpenTelemetry Integration**
+   - Add OpenTelemetry SDK with ASP.NET Core, HttpClient, and EF Core instrumentation
+   - Configure exporters (console for dev, OTLP for production) via configuration
+   - Ensure trace ID correlation between logs and distributed traces
+   - Add custom metrics for business operations (API calls, validation failures, etc.)
+
+4) **Security Framework**
+   - Implement OAuth 2.0/JWT authentication with configurable identity providers
+   - Add authorization policies for different API operations and user roles
+   - Create IOptions-based toggle to disable authentication for local development
+   - Register feature flag abstraction for runtime configuration management
 
 ### Deliverables
 - Both APIs expose /swagger and /health endpoints

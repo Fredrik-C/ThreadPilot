@@ -14,23 +14,27 @@
 - Define Product and Insurance records; Product contains Name, Price, Terms; Insurance references Product and optional VehicleRegNo
 - Define response model aggregating Insurances and embedded Vehicle info when applicable
 
-2) Validation
-- Implement Swedish personal id validator per provided algorithm
-Dubblera varannan siffra: från höger, men inte den första.
-Summera alla siffror: och dra bort 9 om summan är över 9.
-Kontrollsiffran: är den siffra som behövs för att den totala summan ska bli en multipel av 10.
-
-- Map validation failures to 400 with problem details
+2) **Swedish Personal ID Validation**
+   - Implement Swedish personal identification number validator using the Luhn-like algorithm:
+     * **Dubblera varannan siffra**: från höger, men inte den första (double every second digit from right, but not the first)
+     * **Summera alla siffror**: och dra bort 9 om summan är över 9 (sum all digits, subtract 9 if sum > 9)
+     * **Kontrollsiffran**: är den siffra som behövs för att den totala summan ska bli en multipel av 10 (check digit makes total sum divisible by 10)
+   - Support both 10-digit (YYMMDD-XXXX) and 12-digit (YYYYMMDD-XXXX) formats
+   - Map validation failures to HTTP 400 with RFC 7807 Problem Details format
+   - Include detailed validation error messages for different failure scenarios
 
 3) Infrastructure Stubs
 - IInsuranceProvider: returns list of insurances by personal id (pet, personal health, car)
 - For car items: retain VehicleRegNo for follow-up enrichment
 
-4) Integration with Vehicle API
-- Application orchestrator identifies car insurances, fires parallel requests to Vehicle API using Task.WhenAll
-- Handle failures: missing vehicle -> include insurance without vehicle details; timeout -> partial data + 503 or 206 strategy
-- Decide on response strategy: prefer 200 with per-item error notes vs. global 503; document behavior and test accordingly
-
+4) **Vehicle API Integration & Orchestration**
+   - Application orchestrator identifies car insurances and fires parallel requests to Vehicle API using Task.WhenAll
+   - Implement resilient integration patterns:
+     * **Missing vehicle data**: include insurance without vehicle details, log warning
+     * **Timeout scenarios**: return partial data with HTTP 206 (Partial Content) or 200 with error indicators
+     * **Complete failure**: return HTTP 503 (Service Unavailable) with retry-after header
+   - Use HttpClient with Polly for retry policies and circuit breaker patterns
+   - Implement proper cancellation token propagation for request timeouts
 
 > Stub Simulation: Follow docs/planning/stub-simulation-spec.md for consistent Vehicles and Insurances stub scenarios. Control via DI-seeded maps in tests; optional magic inputs for local/manual.
 

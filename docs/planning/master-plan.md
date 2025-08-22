@@ -7,15 +7,16 @@
 Build v1 of an integration layer between the new ThreadPilot core and multiple legacy systems via two independent C# REST APIs that follow Clean Architecture, are observable, secure, tested, containerized, and CI-enabled.
 
 ### 2) Guiding Principles
-- Clean Architecture: API, Application, Domain, Infrastructure per service
-- Separation of concerns: two independent APIs (Vehicles, Insurances) with their own tests and infrastructure
-- Contracts as records; rigorous validators; graceful error handling and correct HTTP codes
-- Observability first (OpenAPI, Health Checks, Structured Logging, OpenTelemetry)
-- Security by default (OAuth), with runtime toggle via appsettings/IOptions
-- Persistence via EF Core with DbUp migrations to containerized SQL Server (tests use in-memory)
-- Testing culture: xUnit + Shouldly + AutoFixture.AutoBogus (unit and in-memory integration)
-- Performance: favor Task.WhenAll for parallel downstream calls
-- DevEx: Docker, docker-compose, GitHub Actions (build/test)
+- **Clean Architecture**: API, Application, Domain, Infrastructure per service with clear dependency inversion
+- **Separation of concerns**: two independent APIs (Vehicles, Insurances) with their own tests and infrastructure
+- **Modern .NET practices**: Target .Net 9+, nullable reference types enabled, minimal APIs or controllers, record types for contracts
+- **Contracts as records**: rigorous validators using FluentValidation or built-in validation; graceful error handling with RFC 7807 Problem Details
+- **Observability first**: OpenAPI 3.0+, Health Checks (liveness/readiness), Structured Logging (Serilog), OpenTelemetry with OTLP
+- **Security by default**: OAuth 2.0/JWT with configurable authentication providers, runtime toggle via IOptions pattern
+- **Persistence**: EF Core 9+ with DbUp migrations to containerized SQL Server (tests use in-memory provider)
+- **Testing culture**: xUnit + Shouldly + AutoFixture.AutoBogus (unit, integration, and contract tests)
+- **Performance**: async/await throughout, Task.WhenAll for parallel calls, cancellation token propagation
+- **DevEx**: Docker multi-stage builds, docker-compose, GitHub Actions with caching and matrix builds
 
 ### 3) Deliverable Phases (with QA gates between phases)
 1. Phase 01 – Solution Foundation & Repo Hygiene
@@ -65,12 +66,14 @@ Build v1 of an integration layer between the new ThreadPilot core and multiple l
 - CI: Phase 01 skeleton, Phase 09 enhancements
 
 ### 5) Test Strategy (incremental, gated)
-- Unit tests: validators, mappers, service logic; Shouldly assertions; AutoFixture.AutoBogus for data
-- In-memory integration tests: API endpoints via WebApplicationFactory; Infrastructure stubs
-- Non-functional checks: health endpoints, swagger availability, structured logging presence
-- Security tests: OAuth enabled/disabled paths; 401/403 behavior; feature toggle semantics
-- Resilience tests: injected fakes for timeouts/failures to validate retries/circuit breaking
-- Performance checks: concurrency correctness and basic throughput using Task.WhenAll in logic
+
+- **Unit tests**: validators, mappers, service logic; Shouldly assertions; AutoFixture.AutoBogus for data generation
+- **Integration tests**: API endpoints via WebApplicationFactory; Infrastructure stubs with scenario injection
+- **Contract tests**: OpenAPI schema validation; request/response contract verification
+- **Non-functional tests**: health endpoints, swagger availability, structured logging presence, metrics collection
+- **Security tests**: OAuth enabled/disabled paths; 401/403 behavior; feature toggle semantics; input validation
+- **Resilience tests**: injected fakes for timeouts/failures to validate retries/circuit breaking/bulkhead patterns
+- **Performance tests**: concurrency correctness, basic throughput using Task.WhenAll, memory usage validation
 
 ### 6) Risk & Mitigation
 - Over-coupling between APIs: maintain separate bounded contexts; integrate via HTTP or shared contracts only where needed

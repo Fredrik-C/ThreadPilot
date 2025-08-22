@@ -7,16 +7,24 @@
 - Tests continue to use in-memory provider
 
 ### Detailed Steps
-1) Domain & Data Modeling
-- Records: Product(Id, Name, Price, Terms), Insurance(Id, PersonId, ProductId, VehicleRegNo?)
-- EF Core DbContext per API (or shared data project if justified), with migrations owned by DbUp
 
-2) DbUp Migrations
-- Create DbUp console or hosted startup runner that applies migrations at boot (idempotent)
-- Baseline schema scripts: Products, Insurances tables and FKs
+1) **Domain & Data Modeling**
+   - Define domain records: `Product(Id, Name, Price, Terms)`, `Insurance(Id, PersonId, ProductId, VehicleRegNo?)`
+   - Create separate DbContext per API to maintain bounded context isolation
+   - Implement repository pattern with generic base repository and specific implementations
+   - Use EF Core value converters for domain-specific types (e.g., PersonId, VehicleRegNo)
 
-3) EF Core Integration
-- Configure DbContext, repositories/services; connection strings via appsettings and env vars
+2) **DbUp Migration Strategy**
+   - Create DbUp console application or hosted service for migration execution
+   - Implement idempotent migration scripts with proper rollback strategies
+   - Baseline schema scripts: Products, Insurances tables with proper indexes and foreign keys
+   - Add audit columns (CreatedAt, UpdatedAt, CreatedBy, UpdatedBy) for data lineage
+
+3) **EF Core Configuration**
+   - Configure DbContext with connection string from appsettings and environment variables
+   - Implement connection resilience with retry policies for transient failures
+   - Configure query splitting and performance optimizations for complex queries
+   - Add database health checks for monitoring and readiness probes
 
 ### Deliverables
 - DbUp project and migration scripts

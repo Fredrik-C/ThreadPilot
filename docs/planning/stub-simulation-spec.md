@@ -17,27 +17,29 @@ Unify how our infrastructure stubs simulate downstream behaviors (success, not f
 - Slow: delays significantly but completes within timeout
 
 ### Control Mechanisms
-1) DI-Seeded Scenario Map (preferred for tests)
-- Seed a dictionary keyed by input with a Scenario:
-  - Vehicles: key = registration number
-  - Insurances: key = personal id
-- Scenario = { Type, DelayMs?, Payload? }
-- Tests configure the stub via options/service registration
 
-2) Magic Inputs (for manual/local smoke)
-- Vehicles (registration number):
-  - TIMEOUT-<anything> => Timeout
-  - ERROR-<anything>   => Error
-  - SLOW-<anything>    => Slow
-  - NOTFOUND-<anything>=> NotFound
-  - Otherwise => Success (default data)
-- Insurances (personal id):
-  - TIMEOUT… => Timeout
-  - ERROR…   => Error
-  - SLOW…    => Slow
-  - NONE…    => Success with empty list
-  - MULTI…   => Success with multiple policies incl. one car
-  - Otherwise => Success (single or default set)
+1) **DI-Seeded Scenario Map (preferred for tests)**
+   - Seed a dictionary keyed by input with a Scenario configuration:
+     - **Vehicles**: key = registration number (e.g., "ABC123")
+     - **Insurances**: key = personal id (e.g., "19801201-1234")
+   - **Scenario structure**: `{ Type, DelayMs?, Payload?, ErrorMessage? }`
+   - Tests configure the stub via IOptions pattern or direct service registration
+   - Supports complex scenarios with custom payloads and specific error conditions
+
+2) **Magic Inputs (for manual/local testing)**
+   - **Vehicles (registration number patterns)**:
+     - `TIMEOUT-*` => Timeout scenario (e.g., "TIMEOUT-ABC123")
+     - `ERROR-*` => Error scenario (e.g., "ERROR-XYZ789")
+     - `SLOW-*` => Slow response scenario (e.g., "SLOW-DEF456")
+     - `NOTFOUND-*` => NotFound scenario (e.g., "NOTFOUND-GHI789")
+     - Otherwise => Success with default vehicle data
+   - **Insurances (personal id patterns)**:
+     - `TIMEOUT*` => Timeout scenario (e.g., "TIMEOUT1234567890")
+     - `ERROR*` => Error scenario (e.g., "ERROR1234567890")
+     - `SLOW*` => Slow response scenario (e.g., "SLOW1234567890")
+     - `NONE*` => Success with empty insurance list (e.g., "NONE1234567890")
+     - `MULTI*` => Success with multiple policies including car insurance (e.g., "MULTI1234567890")
+     - Otherwise => Success with single default insurance policy
 
 ### Timing & Cancellation
 - Client timeout (via HttpClient/resilience policy) governs the upper bound
@@ -73,9 +75,12 @@ Unify how our infrastructure stubs simulate downstream behaviors (success, not f
 - Personal id: use described algorithm; same assumption as above
 
 ### Test Usage Patterns
-- Unit tests: inject stub with DI-seeded scenarios for input(s) under test
-- Integration tests: replace real provider with stub; pass inputs or headers that map to scenarios if necessary
-- Performance tests: compare sequential vs Task.WhenAll using Slow scenarios to demonstrate improvement
+
+- **Unit tests**: inject stub with DI-seeded scenarios for specific input(s) under test
+- **Integration tests**: replace real provider with stub; configure scenarios via test setup or magic inputs
+- **Performance tests**: compare sequential vs Task.WhenAll using Slow scenarios to demonstrate concurrency benefits
+- **Resilience tests**: use Timeout and Error scenarios to validate retry policies and circuit breaker behavior
+- **Contract tests**: verify API responses match expected schemas for all scenario types
 
 ### Documentation & References
 - Vehicles API: see docs/planning/phase-03-vehicle-api.md (Validation and Infrastructure Stub sections)

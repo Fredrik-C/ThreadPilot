@@ -13,34 +13,27 @@
 - Define Vehicle record (e.g., RegNo, Make, Model, Year, FuelType)
 - Define DTOs and mappers between domain and API contracts
 
-2) Validation
+2) **Validation Implementation**
 
-> Stub Simulation: Follow docs/planning/stub-simulation-spec.md for consistent scenarios (Success, NotFound, Timeout, Error, Slow), control via DI-seeded map in tests and magic inputs for local.
+   > **Stub Simulation**: Follow docs/planning/stub-simulation-spec.md for consistent scenarios (Success, NotFound, Timeout, Error, Slow), control via DI-seeded map in tests and magic inputs for local.
 
-- Implement Swedish registration validator using provided regex
-- Add guard middleware/filters to convert validation failures to 400 with problem+details
+   - Implement Swedish vehicle registration validator using the provided regex pattern
+   - Add validation middleware/filters to convert validation failures to HTTP 400 with RFC 7807 Problem Details
+   - Create strongly-typed validation result with detailed error messages
 
-`var regex = new Regex(
-    @"^(?:
-        # Ordinarie (gamla och nya)
-        [A-Z-[IQVÅÄÖ]]{3}\s?(?:\d{3}|\d{2}[A-Z-[IQVÅÄÖO]])
-        |
-        # Personlig skylt (2–7 tecken, minst två icke-mellanslag)
-        (?=.*\S.*\S)[A-Za-zÅÄÖåäö0-9 ]{2,7}
-    )$",
-    RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase
-);
-var regex = new Regex(
-    @"^(?:
-        # Ordinarie (gamla och nya)
-        [A-Z-[IQVÅÄÖ]]{3}\s?(?:\d{3}|\d{2}[A-Z-[IQVÅÄÖO]])
-        |
-        # Personlig skylt (2–7 tecken, minst två icke-mellanslag)
-        (?=.*\S.*\S)[A-Za-zÅÄÖåäö0-9 ]{2,7}
-    )$",
-    RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase
-);
-`
+   **Swedish Vehicle Registration Regex:**
+   ```csharp
+   var regex = new Regex(
+       @"^(?:
+           # Ordinarie (gamla och nya)
+           [A-Z-[IQVÅÄÖ]]{3}\s?(?:\d{3}|\d{2}[A-Z-[IQVÅÄÖO]])
+           |
+           # Personlig skylt (2–7 tecken, minst två icke-mellanslag)
+           (?=.*\S.*\S)[A-Za-zÅÄÖåäö0-9 ]{2,7}
+       )$",
+       RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase
+   );
+   ```
 
 3) Infrastructure Stub
 - Define IVehicleInfoProvider; create StubVehicleInfoProvider with configurable responses (found/not found/timeout)

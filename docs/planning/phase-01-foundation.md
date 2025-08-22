@@ -9,22 +9,51 @@
 - Initial GitHub Actions workflow (build + test)
 
 ### Detailed Steps
-1) Solution and Projects
-- Create a solution with folders per service: src/Vehicles, src/Insurances, tests/Vehicles, tests/Insurances
-- For each API: API (presentation), Application, Domain, Infrastructure projects
-- Reference graph: API -> Application -> Domain; Infrastructure referenced by Application through interfaces
-- Add common analyzers/style (EditorConfig), nullable enable, warnings as errors where reasonable
 
-2) Test Projects
-- xUnit, Shouldly, AutoFixture.AutoBogus packages
-- Unit test assemblies for Application and Domain
-- Integration test assemblies for API (WebApplicationFactory) using in-memory services
+1) **Solution and Projects Structure**
+   ```
+   ThreadPilot.sln
+   ├── src/
+   │   ├── Vehicles/
+   │   │   ├── ThreadPilot.Vehicles.Api/
+   │   │   ├── ThreadPilot.Vehicles.Application/
+   │   │   ├── ThreadPilot.Vehicles.Domain/
+   │   │   └── ThreadPilot.Vehicles.Infrastructure/
+   │   └── Insurances/
+   │       ├── ThreadPilot.Insurances.Api/
+   │       ├── ThreadPilot.Insurances.Application/
+   │       ├── ThreadPilot.Insurances.Domain/
+   │       └── ThreadPilot.Insurances.Infrastructure/
+   └── tests/
+       ├── Vehicles/
+       │   ├── ThreadPilot.Vehicles.UnitTests/
+       │   └── ThreadPilot.Vehicles.IntegrationTests/
+       └── Insurances/
+           ├── ThreadPilot.Insurances.UnitTests/
+           └── ThreadPilot.Insurances.IntegrationTests/
+   ```
 
-3) CI Skeleton
-- GitHub Actions: dotnet restore/build/test on PR and push
+2) **Project Configuration**
+   - Target .Net 9.0, enable nullable reference types, treat warnings as errors
+   - Reference graph: API → Application → Domain; Infrastructure referenced by Application through interfaces
+   - Add Directory.Build.props for common settings (analyzers, nullable, version, etc.)
+   - Configure EditorConfig for consistent formatting and style rules
 
-4) Repo Hygiene
-- .gitignore, minimal CONTRIBUTING notes, solution README skeleton
+3) **Test Projects Setup**
+   - **Package references**: xUnit, Shouldly, AutoFixture.AutoBogus, Microsoft.AspNetCore.Mvc.Testing
+   - **Unit test assemblies**: for Application and Domain layers with isolated testing
+   - **Integration test assemblies**: for API layer using WebApplicationFactory with in-memory services
+   - **Test utilities**: shared test builders, fixtures, and helper methods for consistent test data
+
+4) **CI Skeleton**
+   - GitHub Actions workflow: dotnet restore/build/test on PR and push to main
+   - Basic caching for NuGet packages to improve build performance
+   - Fail-fast strategy with clear error reporting
+
+5) **Repository Hygiene**
+   - .gitignore for .NET projects (bin/, obj/, .vs/, etc.)
+   - CONTRIBUTING.md with development guidelines and PR process
+   - Solution README skeleton with project overview and quick start guide
 
 ### Deliverables
 - Compiling solution with four projects per API + test projects
