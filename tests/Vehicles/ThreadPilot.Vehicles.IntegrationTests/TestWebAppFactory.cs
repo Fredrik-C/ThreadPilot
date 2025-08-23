@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -16,7 +17,9 @@ public sealed class TestWebAppFactory : WebApplicationFactory<Program>
         {
             var dict = new Dictionary<string, string?>
             {
-                ["Security:Enabled"] = "true"
+                ["Security:Enabled"] = "false", // Disable security for integration tests
+                ["StubVehicle:TimeoutDelayMs"] = "100", // Reduce timeout for faster tests
+                ["StubVehicle:SlowDelayMs"] = "50" // Reduce slow delay for faster tests
             }!;
             cfg.AddInMemoryCollection(dict);
         });

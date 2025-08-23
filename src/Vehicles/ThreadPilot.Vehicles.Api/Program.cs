@@ -7,11 +7,16 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using ThreadPilot.Vehicles.Api.Extensions;
+using ThreadPilot.Vehicles.Application.Services;
+using ThreadPilot.Vehicles.Domain;
+using ThreadPilot.Vehicles.Infrastructure.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Bind options
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.sectionName));
+builder.Services.Configure<StubVehicleOptions>(builder.Configuration.GetSection(StubVehicleOptions.SectionName));
 var securityOptions = builder.Configuration.GetSection(SecurityOptions.sectionName).Get<SecurityOptions>() ?? new SecurityOptions();
 
 // Serilog configuration: JSON console, enrich with correlation
@@ -25,7 +30,9 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// OpenAPI
+// Add services to the container
+_ = builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 _ = builder.Services.AddEndpointsApiExplorer();
 _ = builder.Services.AddSwaggerGen();
 
@@ -33,6 +40,9 @@ _ = builder.Services.AddSwaggerGen();
 _ = builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
+// Vehicle services
+_ = builder.Services.AddScoped<IVehicleInfoProvider, StubVehicleInfoProvider>();
+_ = builder.Services.AddScoped<VehicleService>();
 
 // AuthN/AuthZ with toggle
 if (securityOptions.Enabled)
@@ -90,6 +100,9 @@ _ = builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
+// Global exception handling middleware
+_ = app.UseGlobalExceptionHandling();
+
 // Correlation ID middleware (prefer X-Correlation-ID header, otherwise use TraceIdentifier)
 app.Use(async (context, next) =>
 {
@@ -105,7 +118,7 @@ app.Use(async (context, next) =>
     }
 });
 
-// Swagger in Development
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     _ = app.UseSwagger();
@@ -121,8 +134,11 @@ if (securityOptions.Enabled)
     _ = app.UseAuthorization();
 }
 
+_ = app.MapControllers();
+
+// Simple root endpoint for readiness/basic check in dev/tests
 _ = app.MapGet("/", () => Results.Ok("ThreadPilot.Vehicles.Api"))
-    .RequireAuthorization("ReadAccess");
+    .RequireAuthorization("AllowAnonymousWhenAuthDisabled");
 
 app.Run();
 

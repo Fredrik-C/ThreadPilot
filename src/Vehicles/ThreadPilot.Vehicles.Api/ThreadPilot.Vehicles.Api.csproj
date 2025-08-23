@@ -21,6 +21,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ThreadPilot.Vehicles.Application\ThreadPilot.Vehicles.Application.csproj" />
+    <ProjectReference Include="..\ThreadPilot.Vehicles.Infrastructure\ThreadPilot.Vehicles.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ThreadPilot.Vehicles.IntegrationTests" />
   </ItemGroup>
 
 </Project>

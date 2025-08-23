@@ -25,12 +25,13 @@ dotnet_naming_rule.private_fields_should_be_camel_case.symbols = private_fields
 dotnet_naming_rule.private_fields_should_be_camel_case.style = camel_case
 
 dotnet_naming_symbols.private_fields.applicable_kinds = field
-
 dotnet_naming_style.camel_case.capitalization = camel_case
 
 # analyzers
 dotnet_analyzer_diagnostic.category-Style.severity = warning
 
-
 # IDE0160: Convert to block scoped namespace
 csharp_style_namespace_declarations = file_scoped
+
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
