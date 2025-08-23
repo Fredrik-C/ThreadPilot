@@ -11,6 +11,9 @@ using ThreadPilot.Vehicles.Api.Extensions;
 using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Domain;
 using ThreadPilot.Vehicles.Infrastructure.Providers;
+using Microsoft.AspNetCore.Mvc;
+using ThreadPilot.Vehicles.Api.ModelBinding;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +34,23 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Register custom model binder provider for LicenseNumber
+    options.ModelBinderProviders.Insert(0, new LicenseNumberModelBinderProvider());
+}).ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Invalid Registration Number",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+        };
+        return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+    };
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

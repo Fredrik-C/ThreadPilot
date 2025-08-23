@@ -52,7 +52,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
     {
         // Arrange
         var client = factory.CreateClient();
-        var registrationNumber = ""; // Invalid registration number
+        var registrationNumber = Guid.NewGuid().ToString();
 
         // Act
         var response = await client.GetAsync(new Uri($"/api/vehicles/{registrationNumber}", UriKind.Relative));

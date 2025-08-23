@@ -12,6 +12,8 @@ using ThreadPilot.Insurances.Application.Services;
 using ThreadPilot.Insurances.Domain;
 using ThreadPilot.Insurances.Infrastructure.Providers;
 using ThreadPilot.Insurances.Infrastructure.Clients;
+using Microsoft.AspNetCore.Mvc;
+using ThreadPilot.Insurances.Api.ModelBinding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +35,23 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Register custom model binder provider for SwedishPersonalId
+    options.ModelBinderProviders.Insert(0, new SwedishPersonalIdModelBinderProvider());
+}).ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Invalid Personal ID",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+        };
+        return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+    };
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
