@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\..\src\Insurances\ThreadPilot.Insurances.Application\ThreadPilot.Insurances.Application.csproj" />
     <ProjectReference Include="..\..\..\src\Insurances\ThreadPilot.Insurances.Domain\ThreadPilot.Insurances.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Insurances\ThreadPilot.Insurances.Api\ThreadPilot.Insurances.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Insurances\ThreadPilot.Insurances.Infrastructure\ThreadPilot.Insurances.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

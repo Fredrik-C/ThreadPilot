@@ -1,29 +1,193 @@
 # ThreadPilot
 
-Integration layer scaffolding for Vehicles and Insurances APIs following Clean Architecture.
+An integration layer between a new core system (named ThreadPilot) and multiple legacy systems.
 
-## Structure (Phase 01)
+## Overview
 
-- src/
-  - Vehicles/
-    - ThreadPilot.Vehicles.Api
-    - ThreadPilot.Vehicles.Application
-    - ThreadPilot.Vehicles.Domain
-    - ThreadPilot.Vehicles.Infrastructure
-  - Insurances/
-    - ThreadPilot.Insurances.Api
-    - ThreadPilot.Insurances.Application
-    - ThreadPilot.Insurances.Domain
-    - ThreadPilot.Insurances.Infrastructure
-- tests/
-  - Vehicles/
-    - ThreadPilot.Vehicles.UnitTests
-    - ThreadPilot.Vehicles.IntegrationTests
-  - Insurances/
-    - ThreadPilot.Insurances.UnitTests
-    - ThreadPilot.Insurances.IntegrationTests
+- Services
+  - ThreadPilot.Vehicles.Api: exposes vehicle info by Swedish registration number; currently uses a stubbed provider for a legacy system.
+  - ThreadPilot.Insurances.Api: returns insurances for a Swedish personal ID and enriches vehicle products via Vehicles API.
+- Ports (default)
+  - Vehicles API: 5123 (docker), 5193 (dotnet run)
+  - Insurances API: 5261 (docker and dotnet run)
+- Health endpoints
+  - GET /health/live
+  - GET /health/ready
+- OpenAPI (Development only)
+  - /swagger (UI) and /swagger/v1/swagger.json
 
-## Quick start
+## Run locally
+
+Prerequisites: .NET 9 SDK, Docker Desktop (for compose).
+
+Option A: docker-compose (recommended)
+
+1) docker compose up --build -d
+   - Vehicles: <http://localhost:5123>
+   - Insurances: <http://localhost:5261>
+2) Open <http://localhost:5123/swagger> and <http://localhost:5261/swagger>
+3) Health checks: <http://localhost:5123/health/ready> and <http://localhost:5261/health/ready>
+4) Smoke test: PowerShell scripts/compose.ps1 -cmd smoke
+5) Tear down: docker compose down -v --remove-orphans
+
+Option B: dotnet run (both services)
+
+- Terminal 1
+  - cd src/Vehicles/ThreadPilot.Vehicles.Api
+  - dotnet run
+  - Serves on <http://localhost:5193>
+- Terminal 2
+  - cd src/Insurances/ThreadPilot.Insurances.Api
+  - dotnet run
+  - Serves on <http://localhost:5261>
+- Ensure Insurances points to Vehicles:
+  - In src/Insurances/.../appsettings.json set "VehiclesApi": { "BaseAddress": "<http://localhost:5193>" }
+
+Run tests
 
 - dotnet build
 - dotnet test
+
+## Endpoints and samples
+
+### Vehicles
+
+- GET /api/vehicles/{registrationNumber}
+  - Sample OK:
+
+    ```bash
+    curl http://localhost:5123/api/vehicles/ABC123
+    ```
+
+    ```json
+    { "regNo": "ABC123", "make": "Volvo", "model": "V60", "year": 2019, "fuelType": "Petrol" }
+    ```
+  - Not found:
+
+    ```bash
+    curl http://localhost:5123/api/vehicles/XYZ789
+    ```
+
+    => 404 ProblemDetails with code "NotFound"
+
+### Insurances
+
+- GET /api/insurances/{personalId}
+  - Sample OK (enriched):
+
+    ```bash
+    curl http://localhost:5261/api/insurances/640823-3234
+    ```
+
+    ```json
+    [
+      { "product": {"name":"Home Insurance","price":30.0,"terms":"Standard terms"}, "vehicleRegNo": null, "vehicle": null },
+      { "product": {"name":"Car Insurance","price":20.0,"terms":"Comprehensive coverage"}, "vehicleRegNo": "ABC123", "vehicle": {"regNo":"ABC123","make":"Volvo","model":"V60","year":2019,"fuelType":"Petrol"} },
+      { "product": {"name":"Pet Insurance","price":10.0,"terms":"For dogs and cats"}, "vehicleRegNo": null, "vehicle": null }
+    ]
+    ```
+  - Empty:
+
+    ```bash
+    curl http://localhost:5261/api/insurances/19850515-5678
+    ```
+
+    => 404 ProblemDetails with code "NotFound"
+
+### Configured stub triggers (whitelisted values)
+
+- Vehicles (appsettings): ABC123=Success, XYZ789=NotFound, ERR123=Error, TMO123=Timeout, SLO123=Slow
+- Insurances (appsettings): 640823-3234=Success, 19850515-5678=Empty, 19701231-9999=Timeout
+
+## Configuration
+
+Security (OAuth) toggle
+
+- appsettings.json: "Security": { "Enabled": true|false, "Authority": "...", "Audience": "..." }
+- In Development, Security.Enabled is false by default. Docker compose sets Security__Enabled=false for both services.
+- When enabled, policies are registered: "ReadAccess" (role Reader) and "WriteAccess" (role Writer).
+
+Vehicles API base address for Insurances
+
+- appsettings in Insurances: "VehiclesApi": { "BaseAddress": "<http://localhost:5123>" } for docker, "<http://localhost:5193>" for dotnet run.
+
+Feature flags (ready-to-wire)
+
+- Options class: Features section => FeatureFlagsOptions (Flags: { name: bool })
+- Providers: AppSettingsFeatureToggleProvider, RemoteFeatureToggleProvider; aggregator: CompositeFeatureToggle
+- DI example (add to Program.cs):
+
+  ```csharp
+  builder.Services.Configure<FeatureFlagsOptions>(builder.Configuration.GetSection(FeatureFlagsOptions.SectionName));
+  builder.Services.AddSingleton<IFeatureToggleProvider, AppSettingsFeatureToggleProvider>();
+  builder.Services.AddSingleton<IFeatureToggle>(sp => new CompositeFeatureToggle(sp.GetServices<IFeatureToggleProvider>()));
+  ```
+
+- Usage example (service):
+
+  ```csharp
+  public class ExampleService(IFeatureToggle flags)
+  {
+      public bool DoX() => flags.IsEnabled("X");
+  }
+  ```
+
+## Error handling (ProblemDetails)
+
+- Both APIs use a global exception middleware and map service results to RFC7807 ProblemDetails.
+- Stable extensions added:
+  - code: a machine-readable error code (e.g., InvalidPersonalId, NotFound, Timeout)
+  - traceId: current trace identifier (OpenTelemetry)
+  - correlationId: value of X-Correlation-ID if provided
+- Example 400 (Vehicles, invalid reg):
+
+  ```json
+  { "title":"Invalid Registration Number", "status":400, "type":"https://tools.ietf.org/html/rfc7231#section-6.5.1", "extensions": { "code":"InvalidRegistrationNumber", "traceId":"...", "correlationId":"..." } }
+  ```
+
+## Observability
+
+- Structured logging: Serilog emits compact JSON to console with Service and CorrelationId properties.
+- OpenTelemetry: tracing + metrics for ASP.NET Core and HttpClient, console exporters enabled for Development.
+- Correlation: X-Correlation-ID request header is propagated to responses and logs.
+
+## Architecture notes
+
+- Clean Architecture layers per service
+  - Api: HTTP, controllers, model binding, OpenAPI, exception handling, auth, DI.
+  - Application: use cases, contracts, services, feature abstractions.
+  - Domain: business models, validators, exceptions/value objects.
+  - Infrastructure: external providers/clients (currently stubs), feature toggle providers.
+- Data model highlights
+  - Insurances: Product(Name, Price, Terms) and Insurance(Product, VehicleRegNo?)
+  - Vehicles: Vehicle(RegNo, Make, Model, Year, FuelType)
+- Dependency rule: Api depends on Application and Domain; Infrastructure depends on Application and Domain; Application depends only on Domain.
+
+## Security approach
+
+- Toggleable OAuth via Security.Enabled. When enabled, JWT bearer is configured; policies ReadAccess/WriteAccess are registered.
+- Token forwarding: An AuthPropagationHandler exists in Insurances API to forward Authorization to downstream calls. To enable, add:
+
+  ```csharp
+  builder.Services.AddHttpClient<VehiclesApiClient, VehiclesApiClient>().AddHttpMessageHandler<AuthPropagationHandler>();
+  builder.Services.AddHttpContextAccessor();
+  ```
+
+## Extensibility and versioning
+
+- Extend via new controllers/handlers in Api and new services/providers behind Application interfaces.
+- Prefer backwards-compatible contract evolution (additive changes). Introduce new versions only when breaking changes are unavoidable.
+
+## Next steps / future work
+
+- The legacy vehicle system integration protocol (HTTP/AMQP/FTP/other) is not yet defined, therefore resilience policies (timeouts, retries with backoff, circuit breaker) are not implemented.
+Resilience policies should be added when protocol is known.
+- Consider shared building blocks (e.g., FeatureToggleProvider) across services while preserving service autonomy.
+
+## New-developer dry-run checklist
+
+- Clone, dotnet build, dotnet test
+- docker compose up --build -d; verify /health/ready both services
+- Hit sample endpoints listed above and confirm responses
+- Open /swagger for both services
+- Optional: toggle Security.Enabled=true and exercise 401/403 paths
