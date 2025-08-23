@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using ThreadPilot.Insurances.Application.Services;
 using ThreadPilot.Insurances.Application.Contracts;
 using ThreadPilot.Insurances.Domain.Validators;
 using ThreadPilot.Insurances.Api.DTOs;
+using ThreadPilot.Insurances.Domain.ValueObjects;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ThreadPilot.Insurances.Api.Controllers;
 
@@ -17,35 +20,16 @@ public sealed class InsurancesController(InsuranceService insuranceService) : Co
     /// <param name="personalId">The personal ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of insurances</returns>
-    [HttpGet]
-    [HttpGet("{personalId?}")]
+    [HttpGet("{personalId}")]
     [ProducesResponseType(typeof(EnrichedInsuranceDto[]), 200)]
     [ProducesResponseType(typeof(ProblemDetails), 400)]
     [ProducesResponseType(typeof(ProblemDetails), 404)]
     [ProducesResponseType(typeof(ProblemDetails), 503)]
     public async Task<ActionResult<EnrichedInsuranceDto[]>> GetInsurancesByPersonalId(
-        string? personalId,
+        [ModelBinder] SwedishPersonalId personalId,
         CancellationToken cancellationToken = default)
     {
-        var id = personalId ?? string.Empty;
-        // Validate the personal ID first
-        var validationResult = SwedishPersonalIdValidator.Validate(id);
-        if (!validationResult.IsValid)
-        {
-            var problemDetails = new ProblemDetails
-            {
-                Title = "Invalid Personal ID",
-                Detail = validationResult.ErrorMessage,
-                Status = 400,
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-            };
-            return new ObjectResult(problemDetails)
-            {
-                StatusCode = problemDetails.Status
-            };
-        }
-
-        var result = await insuranceService.GetInsurancesAsync(id, cancellationToken).ConfigureAwait(false);
+        var result = await insuranceService.GetInsurancesAsync(personalId.Value, cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccess)
         {

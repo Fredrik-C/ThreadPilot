@@ -48,9 +48,9 @@ public class InsurancesApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetInsurances_WithEmptyPersonalId_ShouldReturnBadRequest()
     {
         // Act
-        var response = await _client.GetAsync(new Uri("/api/insurances/", UriKind.Relative));
+        var response = await _client.GetAsync(new Uri("/api/insurances", UriKind.Relative));
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

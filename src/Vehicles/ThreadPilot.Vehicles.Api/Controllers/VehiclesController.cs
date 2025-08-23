@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Api.DTOs;
+using ThreadPilot.Vehicles.Domain.ValueObjects;
 
 namespace ThreadPilot.Vehicles.Api.Controllers;
 
@@ -17,17 +18,16 @@ public sealed class VehiclesController(VehicleService vehicleService) : Controll
     /// <param name="registrationNumber">The vehicle registration number</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Vehicle information if found</returns>
-    [HttpGet("{registrationNumber?}")]
+    [HttpGet("{registrationNumber}")]
     [ProducesResponseType(typeof(VehicleDto), 200)]
     [ProducesResponseType(typeof(ProblemDetails), 400)]
     [ProducesResponseType(typeof(ProblemDetails), 404)]
     [ProducesResponseType(typeof(ProblemDetails), 503)]
     public async Task<ActionResult<VehicleDto>> GetVehicleByRegistrationNumber(
-        string? registrationNumber,
+        [ModelBinder] LicenseNumber registrationNumber,
         CancellationToken cancellationToken = default)
     {
-        var reg = registrationNumber ?? string.Empty;
-        var result = await vehicleService.GetVehicleAsync(reg, cancellationToken).ConfigureAwait(false);
+        var result = await vehicleService.GetVehicleAsync(registrationNumber.Value, cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
