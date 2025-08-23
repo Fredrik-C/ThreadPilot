@@ -159,10 +159,6 @@ if (securityOptions.Enabled)
 
 app.MapControllers();
 
-// Simple root endpoint for readiness/basic check in dev/tests
-app.MapGet("/", () => Results.Ok("ThreadPilot.Insurances.Api"))
-    .RequireAuthorization("AllowAnonymousWhenAuthDisabled");
-
 app.Run();
 
 internal sealed record SecurityOptions

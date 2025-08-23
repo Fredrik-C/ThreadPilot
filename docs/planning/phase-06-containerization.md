@@ -3,7 +3,7 @@
 ### Scope
 - Multi-stage Dockerfiles for both APIs
 - Health checks in container definitions
-- docker-compose.yml orchestrating APIs and SQL Server
+- docker-compose.yml orchestrating APIs
 
 ### Detailed Steps
 1) Dockerfiles
@@ -24,9 +24,6 @@
 ### Quality Assurance & Tests
 - Compose smoke test script: wait for health, curl swagger/health endpoints, sample requests
 - Validate logs and OpenTelemetry exporters in container environment
-
-### Entry Criteria
-- Phase 05 exit criteria satisfied
 
 ### Exit Criteria (Gate to Phase 07)
 - Local compose up works; health endpoints healthy; sample API flows succeed

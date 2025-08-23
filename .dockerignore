@@ -1,0 +1,57 @@
+# .dockerignore for ThreadPilot
+# Reduce Docker build context and keep container images lean
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE/Editor
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.slnLaunch.user
+*.ncrunchsolution
+*.ncrunchsolution.user
+*.ncrunchproject
+
+# Build outputs
+**/bin/
+**/obj/
+/bin/
+/obj/
+artifacts/
+TestResults/
+coverage/
+
+# Package caches/node
+node_modules/
+
+# Local DB artifacts (if any)
+*.mdf
+*.ldf
+*.dbmdl
+
+# Repo docs and local-only assets not needed to build images
+/docs/
+/tests/
+/scripts/
+/.qwen/
+README.md
+CONTRIBUTING.md
+QWEN.md
+ThreadPilot.v3.ncrunchsolution
+ThreadPilot.v3.ncrunchsolution.user
+ThreadPilot.slnLaunch.user
+
+# Compose files (not needed in image build context)
+docker-compose.yml
+docker-compose.*.yml
+
