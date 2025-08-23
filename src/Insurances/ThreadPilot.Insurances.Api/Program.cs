@@ -7,11 +7,18 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using ThreadPilot.Insurances.Api.Extensions;
+using ThreadPilot.Insurances.Application.Services;
+using ThreadPilot.Insurances.Domain;
+using ThreadPilot.Insurances.Infrastructure.Providers;
+using ThreadPilot.Insurances.Infrastructure.Clients;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Bind options
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.sectionName));
+builder.Services.Configure<StubInsuranceOptions>(builder.Configuration.GetSection(StubInsuranceOptions.sectionName));
+builder.Services.Configure<VehiclesApiClientOptions>(builder.Configuration.GetSection(VehiclesApiClientOptions.SectionName));
 var securityOptions = builder.Configuration.GetSection(SecurityOptions.sectionName).Get<SecurityOptions>() ?? new SecurityOptions();
 
 // Serilog configuration: JSON console, enrich with correlation
@@ -25,26 +32,27 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// OpenAPI
-_ = builder.Services.AddEndpointsApiExplorer();
-_ = builder.Services.AddSwaggerGen();
+// Add services to the container
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Health checks (basic for now; DB and external deps can be added in later phases)
-_ = builder.Services.AddHealthChecks()
+builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
-// HttpContext accessor + outbound HttpClient with auth propagation
-_ = builder.Services.AddHttpContextAccessor();
-_ = builder.Services.AddTransient<ThreadPilot.Insurances.Api.Security.AuthPropagationHandler>();
-
-// Named client for downstream calls (placeholder base address to be set by callers or config)
-_ = builder.Services.AddHttpClient("downstream")
-    .AddHttpMessageHandler<ThreadPilot.Insurances.Api.Security.AuthPropagationHandler>();
+// Insurance services
+builder.Services.AddScoped<IInsuranceProvider, StubInsuranceProvider>();
+builder.Services.AddScoped<InsuranceService>();
+builder.Services.AddHttpClient<VehiclesApiClient, VehiclesApiClient>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ThreadPilot.Insurances.Application.Clients.IVehiclesApiClient>(sp => sp.GetRequiredService<VehiclesApiClient>());
 
 // AuthN/AuthZ with toggle
 if (securityOptions.Enabled)
 {
-    _ = builder.Services
+    builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
@@ -53,7 +61,7 @@ if (securityOptions.Enabled)
             options.Audience = builder.Configuration[$"{SecurityOptions.sectionName}:Audience"];   // e.g., api://insurances
             options.RequireHttpsMetadata = false;
         });
-    _ = builder.Services.AddAuthorization(options =>
+    builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("ReadAccess", policy =>
             policy.RequireAuthenticatedUser().RequireRole("Reader"));
@@ -63,12 +71,13 @@ if (securityOptions.Enabled)
 }
 else
 {
-    _ = builder.Services.AddAuthentication(options =>
+    // Add empty auth services so [Authorize] can still resolve when disabled
+    builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     }).AddJwtBearer(_ => { });
-    _ = builder.Services.AddAuthorization(options =>
+    builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("ReadAccess", policy => policy.RequireAssertion(_ => true));
         options.AddPolicy("WriteAccess", policy => policy.RequireAssertion(_ => true));
@@ -77,23 +86,27 @@ else
 }
 
 // OpenTelemetry: traces and metrics
-_ = builder.Services.AddOpenTelemetry()
+builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r.AddService(serviceName: "ThreadPilot.Insurances.Api"))
     .WithTracing(t =>
     {
-        _ = t.AddAspNetCoreInstrumentation();
-        _ = t.AddHttpClientInstrumentation();
-        _ = t.AddConsoleExporter();
+        t.AddAspNetCoreInstrumentation();
+        t.AddHttpClientInstrumentation();
+        // exporter via config; default console for dev
+        t.AddConsoleExporter();
     })
     .WithMetrics(m =>
     {
-        _ = m.AddAspNetCoreInstrumentation();
-        _ = m.AddRuntimeInstrumentation();
-        _ = m.AddHttpClientInstrumentation();
-        _ = m.AddConsoleExporter();
+        m.AddAspNetCoreInstrumentation();
+        m.AddRuntimeInstrumentation();
+        m.AddHttpClientInstrumentation();
+        m.AddConsoleExporter();
     });
 
 var app = builder.Build();
+
+// Global exception handling middleware
+app.UseGlobalExceptionHandling();
 
 // Correlation ID middleware (prefer X-Correlation-ID header, otherwise use TraceIdentifier)
 app.Use(async (context, next) =>
@@ -110,16 +123,15 @@ app.Use(async (context, next) =>
     }
 });
 
-// Swagger in Development
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-_ = app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => true });
-_ = app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = _ => true });
-
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => true });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = _ => true });
 
 if (securityOptions.Enabled)
 {
@@ -127,8 +139,11 @@ if (securityOptions.Enabled)
     app.UseAuthorization();
 }
 
-_ = app.MapGet("/", () => Results.Ok("ThreadPilot.Insurances.Api"))
-    .RequireAuthorization("ReadAccess");
+app.MapControllers();
+
+// Simple root endpoint for readiness/basic check in dev/tests
+app.MapGet("/", () => Results.Ok("ThreadPilot.Insurances.Api"))
+    .RequireAuthorization("AllowAnonymousWhenAuthDisabled");
 
 app.Run();
 

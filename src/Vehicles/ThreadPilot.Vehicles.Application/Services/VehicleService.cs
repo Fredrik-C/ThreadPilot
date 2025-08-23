@@ -1,20 +1,11 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using ThreadPilot.Vehicles.Domain;
 using ThreadPilot.Vehicles.Domain.Validators;
+using ThreadPilot.Vehicles.Application.Contracts;
 
 namespace ThreadPilot.Vehicles.Application.Services;
 
-public class VehicleService
+public class VehicleService(IVehicleInfoProvider vehicleInfoProvider)
 {
-    private readonly IVehicleInfoProvider _vehicleInfoProvider;
-
-    public VehicleService(IVehicleInfoProvider vehicleInfoProvider)
-    {
-        _vehicleInfoProvider = vehicleInfoProvider;
-    }
-
     public async Task<VehicleServiceResult> GetVehicleAsync(string registrationNumber, CancellationToken cancellationToken = default)
     {
         // Validate the registration number first
@@ -24,14 +15,9 @@ public class VehicleService
             return new VehicleServiceResult(false, null, VehicleServiceError.InvalidRegistrationNumber, validationResult.ErrorMessage);
         }
 
-        var vehicle = await _vehicleInfoProvider.GetVehicleInfoAsync(registrationNumber, cancellationToken).ConfigureAwait(false);
-        
-        if (vehicle == null)
-        {
-            return new VehicleServiceResult(false, null, VehicleServiceError.NotFound, "Vehicle not found");
-        }
+        var vehicle = await vehicleInfoProvider.GetVehicleInfoAsync(registrationNumber, cancellationToken).ConfigureAwait(false);
 
-        return new VehicleServiceResult(true, vehicle, VehicleServiceError.None, null);
+        return vehicle == null ? new VehicleServiceResult(false, null, VehicleServiceError.NotFound, "Vehicle not found") : new VehicleServiceResult(true, vehicle, VehicleServiceError.None, null);
     }
 }
 

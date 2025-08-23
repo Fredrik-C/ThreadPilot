@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Moq;
 using Shouldly;
 using ThreadPilot.Vehicles.Application.Services;
+using ThreadPilot.Vehicles.Application.Contracts;
 using ThreadPilot.Vehicles.Domain;
 using Xunit;
 

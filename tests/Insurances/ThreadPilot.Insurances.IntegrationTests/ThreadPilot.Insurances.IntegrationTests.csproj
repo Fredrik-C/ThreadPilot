@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Insurances\ThreadPilot.Insurances.Api\ThreadPilot.Insurances.Api.csproj" />
-    <InternalsVisibleTo Include="ThreadPilot.Insurances.IntegrationTests" />
   </ItemGroup>
 
 </Project>

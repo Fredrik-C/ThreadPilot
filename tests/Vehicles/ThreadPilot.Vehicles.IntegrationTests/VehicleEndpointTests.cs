@@ -22,7 +22,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var vehicle = await response.Content.ReadFromJsonAsync<VehicleDto>();
-        _ = vehicle.ShouldNotBeNull();
+        vehicle.ShouldNotBeNull();
         vehicle.RegNo.ShouldBe(registrationNumber);
         vehicle.Make.ShouldBe("Volvo");
         vehicle.Model.ShouldBe("V60");
@@ -43,7 +43,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
-        _ = problemDetails.ShouldNotBeNull();
+        problemDetails.ShouldNotBeNull();
         problemDetails.Title.ShouldBe("Vehicle Not Found");
     }
 
@@ -60,7 +60,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
-        _ = problemDetails.ShouldNotBeNull();
+        problemDetails.ShouldNotBeNull();
         problemDetails.Title.ShouldBe("Invalid Registration Number");
     }
 
@@ -77,7 +77,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
-        _ = problemDetails.ShouldNotBeNull();
+        problemDetails.ShouldNotBeNull();
         problemDetails.Title.ShouldBe("Service Unavailable");
     }
 
@@ -94,7 +94,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
-        _ = problemDetails.ShouldNotBeNull();
+        problemDetails.ShouldNotBeNull();
         problemDetails.Title.ShouldBe("Internal Server Error");
     }
 }

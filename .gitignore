@@ -57,3 +57,5 @@ local.settings.json
 
 
 .NCrunch_ThreadPilot/StoredText/
+
+*.ncrunchsolution

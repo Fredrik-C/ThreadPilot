@@ -1,43 +1,44 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace ThreadPilot.Vehicles.Api;
+namespace ThreadPilot.Insurances.Api;
 
 internal static class ProblemDetailsExtensions
 {
-    public static ProblemDetails ToProblemDetails(this Application.Contracts.VehicleServiceResult result)
+    public static ProblemDetails ToProblemDetails(this Application.Contracts.InsuranceServiceResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
 
         var problemDetails = result.Error switch
         {
-            Application.Contracts.VehicleServiceError.InvalidRegistrationNumber => new ProblemDetails
+            Application.Contracts.InsuranceServiceError.InvalidPersonalId => new ProblemDetails
             {
-                Title = "Invalid Registration Number",
+                Title = "Invalid Personal ID",
                 Detail = result.ErrorMessage,
                 Status = 400,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
             },
-            Application.Contracts.VehicleServiceError.NotFound => new ProblemDetails
+            Application.Contracts.InsuranceServiceError.NotFound => new ProblemDetails
             {
-                Title = "Vehicle Not Found",
+                Title = "Insurances Not Found",
                 Detail = result.ErrorMessage,
                 Status = 404,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4"
             },
-            Application.Contracts.VehicleServiceError.Timeout => new ProblemDetails
+            Application.Contracts.InsuranceServiceError.Timeout => new ProblemDetails
             {
                 Title = "Service Unavailable",
                 Detail = result.ErrorMessage,
                 Status = 503,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.6.4"
             },
-            Application.Contracts.VehicleServiceError.InternalError => new ProblemDetails
+            Application.Contracts.InsuranceServiceError.InternalError => new ProblemDetails
             {
                 Title = "Internal Server Error",
                 Detail = result.ErrorMessage,
                 Status = 500,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
             },
+            Application.Contracts.InsuranceServiceError.None => throw new NotImplementedException(),
             _ => new ProblemDetails
             {
                 Title = "Internal Server Error",

@@ -1,11 +1,14 @@
 using System.Diagnostics;
-using ThreadPilot.Vehicles.Domain.Exceptions;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using ThreadPilot.Insurances.Domain.Exceptions;
 
-namespace ThreadPilot.Vehicles.Api.Middleware;
+namespace ThreadPilot.Insurances.Api.Middleware;
 
+// Suppress CA1812 - This middleware is instantiated by the ASP.NET Core framework
+#pragma warning disable CA1812
 internal sealed class GlobalExceptionHandlingMiddleware
+#pragma warning restore CA1812
 {
     private readonly RequestDelegate next;
     private readonly ILogger<GlobalExceptionHandlingMiddleware> logger;
@@ -27,6 +30,8 @@ internal sealed class GlobalExceptionHandlingMiddleware
         {
             await next(context).ConfigureAwait(false);
         }
+        // Suppress CA1848 - LoggerMessage delegates are a performance optimization
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
         catch (TimeoutException ex)
         {
             logger.LogError(ex, "Timeout exception occurred");
@@ -57,11 +62,15 @@ internal sealed class GlobalExceptionHandlingMiddleware
             logger.LogError(ex, "HTTP request exception occurred");
             await HandleExceptionAsync(context, ex).ConfigureAwait(false);
         }
+        // Suppress CA1031 - We intentionally catch all exceptions to handle them gracefully
+#pragma warning disable CA1031 // Do not catch general exception types
         catch (Exception ex)
         {
             logger.LogError(ex, "An unhandled exception occurred");
             await HandleExceptionAsync(context, ex).ConfigureAwait(false);
         }
+#pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
     }
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception exception)

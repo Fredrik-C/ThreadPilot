@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      CA1031: Do not catch general exception types.
+      Disabled for global exception handlers which intentionally catch all exceptions.
+
+      CA1515: Consider making public types internal.
+      Disabled for types that must be public for framework or testing purposes (e.g., MVC controllers, xUnit fixtures).
+
+      CA1812: Avoid uninstantiated internal classes.
+      Disabled for classes instantiated by dependency injection or other runtime mechanisms where the analyzer cannot detect usage.
+
+      CA1848: Use the LoggerMessage delegates.
+      Disabled as a project-wide convention. While LoggerMessage offers performance benefits, direct logging calls are sufficient for many scenarios.
+    -->
+    <NoWarn>$(NoWarn);CA1031;CA1515;CA1812;CA1848</NoWarn>
+  </PropertyGroup>
+</Project>
