@@ -3,7 +3,7 @@ using Shouldly;
 
 namespace ThreadPilot.Vehicles.IntegrationTests;
 
-public class BasicSecurityAndObservabilityTests(TestWebAppFactory factory) : IClassFixture<TestWebAppFactory>
+public sealed class BasicSecurityAndObservabilityTests(TestWebAppFactory factory) : IClassFixture<TestWebAppFactory>
 {
     private readonly TestWebAppFactory factory = factory;
 
