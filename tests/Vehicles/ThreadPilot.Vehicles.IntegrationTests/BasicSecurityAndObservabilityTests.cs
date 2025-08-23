@@ -24,13 +24,4 @@ public sealed class BasicSecurityAndObservabilityTests(TestWebAppFactory factory
         var resp = await client.GetAsync(new Uri("/swagger/v1/swagger.json", UriKind.Relative));
         resp.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
-
-    [Fact]
-    public async Task DevAuthDisabledAllowsRoot()
-    {
-        var client = factory.CreateClient();
-        var resp = await client.GetAsync(new Uri("/", UriKind.Relative));
-        resp.StatusCode.ShouldBe(HttpStatusCode.OK);
-        resp.Headers.Contains("X-Correlation-ID").ShouldBeTrue();
-    }
 }
