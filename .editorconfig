@@ -31,3 +31,6 @@ dotnet_naming_style.camel_case.capitalization = camel_case
 # analyzers
 dotnet_analyzer_diagnostic.category-Style.severity = warning
 
+
+# IDE0160: Convert to block scoped namespace
+csharp_style_namespace_declarations = file_scoped

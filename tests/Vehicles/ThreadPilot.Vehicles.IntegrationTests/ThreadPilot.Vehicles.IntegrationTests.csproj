@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Vehicles\ThreadPilot.Vehicles.Api\ThreadPilot.Vehicles.Api.csproj" />
+    <InternalsVisibleTo Include="ThreadPilot.Vehicles.IntegrationTests" />
   </ItemGroup>
 
 </Project>

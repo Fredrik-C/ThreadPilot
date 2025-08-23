@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Insurances\ThreadPilot.Insurances.Api\ThreadPilot.Insurances.Api.csproj" />
+    <InternalsVisibleTo Include="ThreadPilot.Insurances.IntegrationTests" />
   </ItemGroup>
 
 </Project>
