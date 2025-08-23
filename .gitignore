@@ -55,3 +55,7 @@ local.settings.json
 **/Dockerfile*
 **/docker-compose*.yml
 
+
+.NCrunch_ThreadPilot/StoredText/
+
+*.ncrunchsolution

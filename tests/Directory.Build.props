@@ -1,0 +1,9 @@
+<Project>
+    <PropertyGroup>
+        <!--
+      CA1515: Consider making public types internal.
+      Disabled for types that must be public for framework or testing purposes (e.g., xUnit fixtures).
+    -->
+        <NoWarn>$(NoWarn);CA1515</NoWarn>
+    </PropertyGroup>
+</Project>

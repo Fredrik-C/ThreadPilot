@@ -4,34 +4,34 @@ namespace ThreadPilot.Vehicles.Api;
 
 internal static class ProblemDetailsExtensions
 {
-    public static ProblemDetails ToProblemDetails(this Application.Services.VehicleServiceResult result)
+    public static ProblemDetails ToProblemDetails(this Application.Contracts.VehicleServiceResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
 
-        return result.Error switch
+        var problemDetails = result.Error switch
         {
-            Application.Services.VehicleServiceError.InvalidRegistrationNumber => new ProblemDetails
+            Application.Contracts.VehicleServiceError.InvalidRegistrationNumber => new ProblemDetails
             {
                 Title = "Invalid Registration Number",
                 Detail = result.ErrorMessage,
                 Status = 400,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
             },
-            Application.Services.VehicleServiceError.NotFound => new ProblemDetails
+            Application.Contracts.VehicleServiceError.NotFound => new ProblemDetails
             {
                 Title = "Vehicle Not Found",
                 Detail = result.ErrorMessage,
                 Status = 404,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4"
             },
-            Application.Services.VehicleServiceError.Timeout => new ProblemDetails
+            Application.Contracts.VehicleServiceError.Timeout => new ProblemDetails
             {
                 Title = "Service Unavailable",
                 Detail = result.ErrorMessage,
                 Status = 503,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.6.4"
             },
-            Application.Services.VehicleServiceError.InternalError => new ProblemDetails
+            Application.Contracts.VehicleServiceError.InternalError => new ProblemDetails
             {
                 Title = "Internal Server Error",
                 Detail = result.ErrorMessage,
@@ -46,5 +46,9 @@ internal static class ProblemDetailsExtensions
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
             }
         };
+
+        // Add stable machine-readable error code for client logic
+        problemDetails.Extensions["code"] = result.Error.ToString();
+        return problemDetails;
     }
 }

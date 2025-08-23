@@ -21,6 +21,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ThreadPilot.Insurances.Application\ThreadPilot.Insurances.Application.csproj" />
+    <ProjectReference Include="..\ThreadPilot.Insurances.Infrastructure\ThreadPilot.Insurances.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ThreadPilot.Insurances.IntegrationTests" />
   </ItemGroup>
 
 </Project>

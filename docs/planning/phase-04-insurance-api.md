@@ -33,7 +33,6 @@
      * **Missing vehicle data**: include insurance without vehicle details, log warning
      * **Timeout scenarios**: return partial data with HTTP 206 (Partial Content) or 200 with error indicators
      * **Complete failure**: return HTTP 503 (Service Unavailable) with retry-after header
-   - Use HttpClient with Polly for retry policies and circuit breaker patterns
    - Implement proper cancellation token propagation for request timeouts
 
 > Stub Simulation: Follow docs/planning/stub-simulation-spec.md for consistent Vehicles and Insurances stub scenarios. Control via DI-seeded maps in tests; optional magic inputs for local/manual.
@@ -61,3 +60,11 @@
 - All insurance endpoint tests pass in CI (unit + integration)
 - Performance assertion for parallelization holds (mocked timings demonstrate benefit)
 
+
+
+### Response Shape (Phase-04)
+- The Insurances API returns an array of enriched entries where each item contains:
+  - Product: { Name, Price, Terms }
+  - VehicleRegNo: string? (present for car insurances)
+  - Vehicle: object? with { RegNo, Make, Model, Year, FuelType } when available
+- On downstream vehicle data issues, Vehicle is null for affected entries while the list is still returned with HTTP 200.

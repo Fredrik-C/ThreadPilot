@@ -11,6 +11,9 @@ using ThreadPilot.Vehicles.Api.Extensions;
 using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Domain;
 using ThreadPilot.Vehicles.Infrastructure.Providers;
+using Microsoft.AspNetCore.Mvc;
+using ThreadPilot.Vehicles.Api.ModelBinding;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,23 +34,39 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-_ = builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Register custom model binder provider for LicenseNumber
+    options.ModelBinderProviders.Insert(0, new LicenseNumberModelBinderProvider());
+}).ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Invalid Registration Number",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+        };
+        return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+    };
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-_ = builder.Services.AddEndpointsApiExplorer();
-_ = builder.Services.AddSwaggerGen();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Health checks (basic for now; DB and external deps can be added in later phases)
-_ = builder.Services.AddHealthChecks()
+builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
 // Vehicle services
-_ = builder.Services.AddScoped<IVehicleInfoProvider, StubVehicleInfoProvider>();
-_ = builder.Services.AddScoped<VehicleService>();
+builder.Services.AddScoped<IVehicleInfoProvider, StubVehicleInfoProvider>();
+builder.Services.AddScoped<VehicleService>();
 
 // AuthN/AuthZ with toggle
 if (securityOptions.Enabled)
 {
-    _ = builder.Services
+    builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
@@ -56,7 +75,7 @@ if (securityOptions.Enabled)
             options.Audience = builder.Configuration[$"{SecurityOptions.sectionName}:Audience"];   // e.g., api://vehicles
             options.RequireHttpsMetadata = false;
         });
-    _ = builder.Services.AddAuthorization(options =>
+    builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("ReadAccess", policy =>
             policy.RequireAuthenticatedUser().RequireRole("Reader"));
@@ -67,12 +86,12 @@ if (securityOptions.Enabled)
 else
 {
     // Add empty auth services so [Authorize] can still resolve when disabled
-    _ = builder.Services.AddAuthentication(options =>
+    builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     }).AddJwtBearer(_ => { });
-    _ = builder.Services.AddAuthorization(options =>
+    builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("ReadAccess", policy => policy.RequireAssertion(_ => true));
         options.AddPolicy("WriteAccess", policy => policy.RequireAssertion(_ => true));
@@ -81,27 +100,27 @@ else
 }
 
 // OpenTelemetry: traces and metrics
-_ = builder.Services.AddOpenTelemetry()
+builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r.AddService(serviceName: "ThreadPilot.Vehicles.Api"))
     .WithTracing(t =>
     {
-        _ = t.AddAspNetCoreInstrumentation();
-        _ = t.AddHttpClientInstrumentation();
+        t.AddAspNetCoreInstrumentation();
+        t.AddHttpClientInstrumentation();
         // exporter via config; default console for dev
-        _ = t.AddConsoleExporter();
+        t.AddConsoleExporter();
     })
     .WithMetrics(m =>
     {
-        _ = m.AddAspNetCoreInstrumentation();
-        _ = m.AddRuntimeInstrumentation();
-        _ = m.AddHttpClientInstrumentation();
-        _ = m.AddConsoleExporter();
+        m.AddAspNetCoreInstrumentation();
+        m.AddRuntimeInstrumentation();
+        m.AddHttpClientInstrumentation();
+        m.AddConsoleExporter();
     });
 
 var app = builder.Build();
 
 // Global exception handling middleware
-_ = app.UseGlobalExceptionHandling();
+app.UseGlobalExceptionHandling();
 
 // Correlation ID middleware (prefer X-Correlation-ID header, otherwise use TraceIdentifier)
 app.Use(async (context, next) =>
@@ -121,23 +140,23 @@ app.Use(async (context, next) =>
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    _ = app.UseSwagger();
-    _ = app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-_ = app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => true });
-_ = app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = _ => true });
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => true });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = _ => true });
 
 if (securityOptions.Enabled)
 {
-    _ = app.UseAuthentication();
-    _ = app.UseAuthorization();
+    app.UseAuthentication();
+    app.UseAuthorization();
 }
 
-_ = app.MapControllers();
+app.MapControllers();
 
 // Simple root endpoint for readiness/basic check in dev/tests
-_ = app.MapGet("/", () => Results.Ok("ThreadPilot.Vehicles.Api"))
+app.MapGet("/", () => Results.Ok("ThreadPilot.Vehicles.Api"))
     .RequireAuthorization("AllowAnonymousWhenAuthDisabled");
 
 app.Run();
