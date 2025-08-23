@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\..\src\Vehicles\ThreadPilot.Vehicles.Application\ThreadPilot.Vehicles.Application.csproj" />
     <ProjectReference Include="..\..\..\src\Vehicles\ThreadPilot.Vehicles.Domain\ThreadPilot.Vehicles.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Vehicles\ThreadPilot.Vehicles.Api\ThreadPilot.Vehicles.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Vehicles\ThreadPilot.Vehicles.Infrastructure\ThreadPilot.Vehicles.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

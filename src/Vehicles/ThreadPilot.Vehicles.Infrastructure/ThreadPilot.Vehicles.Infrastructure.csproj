@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ThreadPilot.Vehicles.Domain\ThreadPilot.Vehicles.Domain.csproj" />
+    <ProjectReference Include="..\ThreadPilot.Vehicles.Application\ThreadPilot.Vehicles.Application.csproj" />
   </ItemGroup>
 
 </Project>

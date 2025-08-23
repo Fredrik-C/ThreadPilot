@@ -9,7 +9,7 @@ public class LicenseNumberValueObjectTests
     [Theory]
     [InlineData("ABC123")]
     [InlineData("XYZ 789")]
-    [InlineData("NOTFOUND-XYZ")]
+
     public void Create_ShouldReturnValueObject_ForValidRegistrationNumber(string input)
     {
         var obj = LicenseNumber.Create(input);

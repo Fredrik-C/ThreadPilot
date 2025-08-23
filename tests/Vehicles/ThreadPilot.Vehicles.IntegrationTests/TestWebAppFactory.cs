@@ -15,7 +15,12 @@ public sealed class TestWebAppFactory : WebApplicationFactory<Program>
             {
                 ["Security:Enabled"] = "false", // Disable security for integration tests
                 ["StubVehicle:TimeoutDelayMs"] = "100", // Reduce timeout for faster tests
-                ["StubVehicle:SlowDelayMs"] = "50" // Reduce slow delay for faster tests
+                ["StubVehicle:SlowDelayMs"] = "50", // Reduce slow delay for faster tests
+                ["StubVehicle:Scenarios:ABC123:Type"] = "Success",
+                ["StubVehicle:Scenarios:XYZ789:Type"] = "NotFound",
+                ["StubVehicle:Scenarios:ERR123:Type"] = "Error",
+                ["StubVehicle:Scenarios:TMO123:Type"] = "Timeout",
+                ["StubVehicle:Scenarios:SLO123:Type"] = "Slow"
             }!;
             cfg.AddInMemoryCollection(dict);
         });

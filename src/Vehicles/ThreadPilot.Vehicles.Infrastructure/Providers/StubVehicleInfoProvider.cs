@@ -21,29 +21,6 @@ public class StubVehicleInfoProvider : IVehicleInfoProvider
     {
         ArgumentNullException.ThrowIfNull(registrationNumber);
 
-        // Check for magic inputs first
-        if (registrationNumber.StartsWith("TIMEOUT-", StringComparison.OrdinalIgnoreCase))
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(_options.TimeoutDelayMs), cancellationToken).ConfigureAwait(false);
-            throw new TimeoutException("Simulated timeout from external vehicle system");
-        }
-
-        if (registrationNumber.StartsWith("ERROR-", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("Simulated error from external vehicle system");
-        }
-
-        if (registrationNumber.StartsWith("SLOW-", StringComparison.OrdinalIgnoreCase))
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(_options.SlowDelayMs), cancellationToken).ConfigureAwait(false);
-            return new Vehicle(registrationNumber, "Volvo", "V60", 2019, "Petrol");
-        }
-
-        if (registrationNumber.StartsWith("NOTFOUND-", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-
         // Check for DI-seeded scenarios
         if (_options.Scenarios.TryGetValue(registrationNumber, out var scenario))
         {

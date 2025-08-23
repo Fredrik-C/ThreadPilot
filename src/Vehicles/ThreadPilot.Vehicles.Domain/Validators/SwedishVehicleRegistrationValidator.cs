@@ -15,15 +15,7 @@ public static class SwedishVehicleRegistrationValidator
         if (string.IsNullOrWhiteSpace(registrationNumber))
             return false;
 
-        // Allow special integration-test scenarios that use prefixes longer than 7 chars
         var trimmed = registrationNumber.Trim();
-        if (trimmed.StartsWith("NOTFOUND-", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("TIMEOUT-", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("ERROR-", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("SLOW-", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
 
         // Check length constraints for normal plates
         return trimmed.Length >= 2 && trimmed.Length <= 7 && regex.IsMatch(trimmed);
@@ -37,15 +29,6 @@ public static class SwedishVehicleRegistrationValidator
         }
 
         var trimmed = registrationNumber.Trim();
-
-        // Allow special integration-test scenarios that use prefixes longer than 7 chars
-        if (trimmed.StartsWith("NOTFOUND-", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("TIMEOUT-", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("ERROR-", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("SLOW-", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ValidationResult(true, null);
-        }
 
         // Check length constraints for normal plates
         return trimmed.Length is < 2 or > 7

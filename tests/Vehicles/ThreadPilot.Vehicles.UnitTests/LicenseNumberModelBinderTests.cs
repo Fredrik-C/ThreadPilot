@@ -62,15 +62,15 @@ public class LicenseNumberModelBinderTests
     }
 
     [Fact]
-    public async Task BindModelAsync_ShouldBind_ForSpecialScenarioPrefixes()
+    public async Task BindModelAsync_ShouldBind_ForConfiguredScenarioId()
     {
         var binder = new LicenseNumberModelBinder();
-        var context = CreateBindingContext("registrationNumber", "NOTFOUND-ABC");
+        var context = CreateBindingContext("registrationNumber", "XYZ789");
 
         await binder.BindModelAsync(context);
 
         context.Result.IsModelSet.ShouldBeTrue();
-        ((LicenseNumber)context.Result.Model!).Value.ShouldBe("NOTFOUND-ABC");
+        ((LicenseNumber)context.Result.Model!).Value.ShouldBe("XYZ789");
     }
 
     [Fact]
