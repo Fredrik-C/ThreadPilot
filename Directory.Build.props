@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <!-- Common settings for all projects -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <!-- Enforce consistent version across projects when unspecified -->
+    <Version>0.1.0</Version>
+    <Company>ThreadPilot</Company>
+    <Authors>ThreadPilot</Authors>
+  </PropertyGroup>
+
+  <!-- Enable recommended analyzers -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+  </PropertyGroup>
+</Project>
+
