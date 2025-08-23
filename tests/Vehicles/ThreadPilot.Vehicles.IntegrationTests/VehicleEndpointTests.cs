@@ -35,7 +35,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
     {
         // Arrange
         var client = factory.CreateClient();
-        var registrationNumber = "NOTFOUND-XYZ789";
+        var registrationNumber = "XYZ789"; // seeded NotFound scenario in appsettings
 
         // Act
         var response = await client.GetAsync(new Uri($"/api/vehicles/{registrationNumber}", UriKind.Relative));
@@ -69,7 +69,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
     {
         // Arrange
         var client = factory.CreateClient();
-        var registrationNumber = "TIMEOUT-ABC123";
+        var registrationNumber = "TMO123"; // seeded Timeout scenario
 
         // Act
         var response = await client.GetAsync(new Uri($"/api/vehicles/{registrationNumber}", UriKind.Relative));
@@ -86,7 +86,7 @@ public sealed class VehicleEndpointTests(TestWebAppFactory factory) : IClassFixt
     {
         // Arrange
         var client = factory.CreateClient();
-        var registrationNumber = "ERROR-XYZ789";
+        var registrationNumber = "ERR123"; // seeded Error scenario
 
         // Act
         var response = await client.GetAsync(new Uri($"/api/vehicles/{registrationNumber}", UriKind.Relative));

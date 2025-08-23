@@ -17,29 +17,6 @@ public class StubInsuranceProvider : IInsuranceProvider
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(personalId);
 
-        // Check for magic inputs first
-        if (personalId.StartsWith("TIMEOUT-", StringComparison.OrdinalIgnoreCase))
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(options.TimeoutDelayMs), cancellationToken).ConfigureAwait(false);
-            throw new TimeoutException("Simulated timeout from external insurance system");
-        }
-
-        if (personalId.StartsWith("ERROR-", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("Simulated error from external insurance system");
-        }
-
-        if (personalId.StartsWith("SLOW-", StringComparison.OrdinalIgnoreCase))
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(options.SlowDelayMs), cancellationToken).ConfigureAwait(false);
-            return CreateDefaultInsurances();
-        }
-
-        if (personalId.StartsWith("EMPTY-", StringComparison.OrdinalIgnoreCase))
-        {
-            return [];
-        }
-
         // Check for DI-seeded scenarios
         if (options.Scenarios.TryGetValue(personalId, out var scenario))
         {
