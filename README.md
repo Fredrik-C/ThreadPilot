@@ -48,6 +48,13 @@ Run tests
 - dotnet build
 - dotnet test
 
+## New-developer dry-run checklist
+
+- Clone, dotnet build, dotnet test
+- docker compose up --build -d; verify /health/ready both services
+- Hit sample endpoints listed above and confirm responses
+- Open /swagger for both services
+
 ## Endpoints and samples
 
 ### Vehicles
@@ -184,10 +191,11 @@ Feature flags (ready-to-wire)
 Resilience policies should be added when protocol is known.
 - Consider shared building blocks (e.g., FeatureToggleProvider) across services while preserving service autonomy.
 
-## New-developer dry-run checklist
+## Previous experience of similar projects
 
-- Clone, dotnet build, dotnet test
-- docker compose up --build -d; verify /health/ready both services
-- Hit sample endpoints listed above and confirm responses
-- Open /swagger for both services
-- Optional: toggle Security.Enabled=true and exercise 401/403 paths
+At my current assignment we have migrated from a monolith consising of 3 major services to domain focused microservices.
+We used a "strangler pattern" approach where we created new services and gradually migrated the functionality from the monolith to the new services.
+
+## Challanges
+
+Figuring out a good enough approach to test how the api react to downstream failures.
