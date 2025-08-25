@@ -68,3 +68,8 @@ local.settings.json
 !*.ps1
 !*.psm1
 !*.psd1
+
+
+# Ensure service Dockerfiles are tracked (override global Dockerfile ignore)
+!/src/Vehicles/ThreadPilot.Vehicles.Api/Dockerfile
+!/src/Insurances/ThreadPilot.Insurances.Api/Dockerfile
