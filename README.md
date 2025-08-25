@@ -185,11 +185,50 @@ Feature flags (ready-to-wire)
 - Extend via new controllers/handlers in Api and new services/providers behind Application interfaces.
 - Prefer backwards-compatible contract evolution (additive changes). Introduce new versions only when breaking changes are unavoidable.
 
+## Test Strategy
+
+To ensure the quality, reliability, and maintainability of the ThreadPilot services, a layered testing approach is essential. Here's how different types of tests should be approached:
+
+### Unit Tests
+
+*   **Focus**: Isolate and test individual units of code, typically methods within classes in the Application and Domain layers.
+*   **Boundaries**: Mock or stub external dependencies such as `IVehicleInfoProvider`, `IInsuranceProvider`, HTTP clients, databases, or file systems. The goal is to test the logic *within* the unit, not the interaction with dependencies.
+*   **Frameworks**: Use standard .NET testing frameworks like xUnit, NUnit, or MSTest. Leverage mocking libraries like Moq or NSubstitute.
+
+### Integration Tests
+
+*   **Focus**: Test the interaction between integrated components within a single service, particularly how the Application layer interacts with the Infrastructure layer.
+*   **Boundaries**: Tests should involve real implementations of dependencies where feasible (e.g., using an in-memory database instead of a real one, or using the stub providers with specific configurations). Avoid mocking internal units tested in isolation by unit tests. For example, test the `VehicleService` using the actual `StubVehicleInfoProvider` configured for specific scenarios.
+*   **Scope**: Validate data flow, configuration binding, and the correctness of complex queries or operations that span multiple classes but stay within the service boundary.
+
+### End-to-End (E2E) Tests (Future Implementation)
+
+*   **Focus**: Validate the entire flow of a user scenario across multiple services, from the API endpoint down to the (stubbed) external system calls and back.
+*   **Implementation Plan**:
+    *   Utilize the existing Docker Compose setup to spin up both services in a known state.
+    *   Write dedicated test suites (e.g., using .NET test projects with libraries like `Microsoft.AspNetCore.Mvc.Testing` or external tools like Playwright/Cypress for API interactions) that send real HTTP requests to the service endpoints.
+    *   Configure the stubs via `appsettings` or direct API calls (if a configuration endpoint is added) to simulate various scenarios (success, failure, timeouts) for the legacy system interactions.
+    *   Assertions should cover the final response, ensuring the system behaves correctly end-to-end, including the integration between Insurances and Vehicles APIs.
+
+### Performance Tests (Future Implementation)
+
+*   **Focus**: Assess the responsiveness, throughput, and stability of the services under various load conditions.
+*   **Implementation Plan**:
+    *   Use tools like k6, JMeter, or Locust to generate load.
+    *   Target the Docker Compose environment or a staging environment.
+    *   Define test scenarios based on expected real-world usage patterns (e.g., concurrent users fetching vehicle info, requesting insurance lists).
+    *   Include tests for resilience by configuring stubs to simulate slow or error responses and observing how the system handles them (e.g., with timeouts and circuit breakers once implemented).
+    *   Monitor key metrics like response time, error rate, and resource utilization (CPU, memory).
+
 ## Next steps / future work
 
 - The legacy vehicle system integration protocol (HTTP/AMQP/FTP/other) is not yet defined, therefore resilience policies (timeouts, retries with backoff, circuit breaker) are not implemented.
 Resilience policies should be added when protocol is known.
 - Consider shared building blocks (e.g., FeatureToggleProvider) across services while preserving service autonomy.
+
+## Contribution guidelines
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Previous experience of similar projects
 
