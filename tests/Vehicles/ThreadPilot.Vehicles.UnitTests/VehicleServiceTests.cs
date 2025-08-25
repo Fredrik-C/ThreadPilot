@@ -1,24 +1,20 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Moq;
 using Shouldly;
 using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Application.Contracts;
 using ThreadPilot.Vehicles.Domain;
-using Xunit;
 
 namespace ThreadPilot.Vehicles.UnitTests;
 
 public class VehicleServiceTests
 {
-    private readonly Mock<IVehicleInfoProvider> _mockProvider;
-    private readonly VehicleService _vehicleService;
+    private readonly Mock<IVehicleInfoProvider> mockProvider;
+    private readonly VehicleService sut;
 
     public VehicleServiceTests()
     {
-        _mockProvider = new Mock<IVehicleInfoProvider>();
-        _vehicleService = new VehicleService(_mockProvider.Object);
+        mockProvider = new Mock<IVehicleInfoProvider>();
+        sut = new VehicleService(mockProvider.Object);
     }
 
     [Fact]
@@ -27,11 +23,11 @@ public class VehicleServiceTests
         // Arrange
         var registrationNumber = "ABC123";
         var expectedVehicle = new Vehicle(registrationNumber, "Volvo", "V60", 2019, "Petrol");
-        _mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
+        mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
             .ReturnsAsync(expectedVehicle);
 
         // Act
-        var result = await _vehicleService.GetVehicleAsync(registrationNumber);
+        var result = await sut.GetVehicleAsync(registrationNumber);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -45,11 +41,11 @@ public class VehicleServiceTests
     {
         // Arrange
         var registrationNumber = "XYZ789";
-        _mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
+        mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
             .ReturnsAsync((Vehicle?)null);
 
         // Act
-        var result = await _vehicleService.GetVehicleAsync(registrationNumber);
+        var result = await sut.GetVehicleAsync(registrationNumber);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -65,7 +61,7 @@ public class VehicleServiceTests
         var registrationNumber = ""; // Invalid registration number
 
         // Act
-        var result = await _vehicleService.GetVehicleAsync(registrationNumber);
+        var result = await sut.GetVehicleAsync(registrationNumber);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -79,11 +75,11 @@ public class VehicleServiceTests
     {
         // Arrange
         var registrationNumber = "ABC123";
-        _mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
+        mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
             .ThrowsAsync(new TimeoutException());
 
         // Act & Assert
-        await Should.ThrowAsync<TimeoutException>(async () => await _vehicleService.GetVehicleAsync(registrationNumber));
+        await Should.ThrowAsync<TimeoutException>(async () => await sut.GetVehicleAsync(registrationNumber));
     }
 
     [Fact]
@@ -91,10 +87,10 @@ public class VehicleServiceTests
     {
         // Arrange
         var registrationNumber = "ABC123";
-        _mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
+        mockProvider.Setup(p => p.GetVehicleInfoAsync(registrationNumber, CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("Test error"));
 
         // Act & Assert
-        await Should.ThrowAsync<InvalidOperationException>(async () => await _vehicleService.GetVehicleAsync(registrationNumber));
+        await Should.ThrowAsync<InvalidOperationException>(async () => await sut.GetVehicleAsync(registrationNumber));
     }
 }

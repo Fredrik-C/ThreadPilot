@@ -18,7 +18,7 @@ public sealed class CompositeFeatureToggle : IFeatureToggle
             if (p.TryGet(featureName, out var value))
                 return value;
         }
+
         return @default;
     }
 }
-

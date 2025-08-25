@@ -1,6 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace ThreadPilot.Vehicles.Domain;
 
 public interface IVehicleInfoProvider

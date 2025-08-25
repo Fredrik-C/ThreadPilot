@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 using ThreadPilot.Insurances.Application.Services;
-using ThreadPilot.Insurances.Application.Contracts;
-using ThreadPilot.Insurances.Domain.Validators;
 using ThreadPilot.Insurances.Api.DTOs;
 using ThreadPilot.Insurances.Domain.ValueObjects;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ThreadPilot.Insurances.Api.Controllers;
 

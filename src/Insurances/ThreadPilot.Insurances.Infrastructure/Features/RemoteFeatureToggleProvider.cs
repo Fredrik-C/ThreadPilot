@@ -9,15 +9,13 @@ public sealed class RemoteFeatureToggleProvider : IFeatureToggleProvider
     private readonly ConcurrentDictionary<string, bool> _cache = new();
 
     public bool TryGet(string featureName, out bool isEnabled)
-        => _cache.TryGetValue(featureName, out isEnabled);
+    {
+        return _cache.TryGetValue(featureName, out isEnabled);
+    }
 
     // Internal update method for future BackgroundService
     public void Update(IDictionary<string, bool> flags)
     {
-        foreach (var kv in flags)
-        {
-            _cache[kv.Key] = kv.Value;
-        }
+        foreach (var kv in flags) _cache[kv.Key] = kv.Value;
     }
 }
-

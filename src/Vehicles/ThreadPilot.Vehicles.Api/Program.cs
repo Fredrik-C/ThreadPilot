@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -8,19 +10,18 @@ using Serilog.Context;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using ThreadPilot.Vehicles.Api.Extensions;
+using ThreadPilot.Vehicles.Api.ModelBinding;
 using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Domain;
 using ThreadPilot.Vehicles.Infrastructure.Providers;
-using Microsoft.AspNetCore.Mvc;
-using ThreadPilot.Vehicles.Api.ModelBinding;
-using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Bind options
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.sectionName));
 builder.Services.Configure<StubVehicleOptions>(builder.Configuration.GetSection(StubVehicleOptions.SectionName));
-var securityOptions = builder.Configuration.GetSection(SecurityOptions.sectionName).Get<SecurityOptions>() ?? new SecurityOptions();
+var securityOptions = builder.Configuration.GetSection(SecurityOptions.sectionName).Get<SecurityOptions>() ??
+                      new SecurityOptions();
 
 // Serilog configuration: JSON console, enrich with correlation
 Log.Logger = new LoggerConfiguration()
@@ -57,7 +58,7 @@ builder.Services.AddSwaggerGen();
 
 // Health checks (basic for now; DB and external deps can be added in later phases)
 builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+    .AddCheck("self", () => HealthCheckResult.Healthy());
 
 // Vehicle services
 builder.Services.AddScoped<IVehicleInfoProvider, StubVehicleInfoProvider>();
@@ -71,8 +72,9 @@ if (securityOptions.Enabled)
         .AddJwtBearer(options =>
         {
             // Configurable authority/audience via appsettings; placeholders for now
-            options.Authority = builder.Configuration[$"{SecurityOptions.sectionName}:Authority"]; // e.g., https://login.example.com/
-            options.Audience = builder.Configuration[$"{SecurityOptions.sectionName}:Audience"];   // e.g., api://vehicles
+            options.Authority =
+                builder.Configuration[$"{SecurityOptions.sectionName}:Authority"]; // e.g., https://login.example.com/
+            options.Audience = builder.Configuration[$"{SecurityOptions.sectionName}:Audience"]; // e.g., api://vehicles
             options.RequireHttpsMetadata = false;
         });
     builder.Services.AddAuthorization(options =>
@@ -101,7 +103,7 @@ else
 
 // OpenTelemetry: traces and metrics
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(r => r.AddService(serviceName: "ThreadPilot.Vehicles.Api"))
+    .ConfigureResource(r => r.AddService("ThreadPilot.Vehicles.Api"))
     .WithTracing(t =>
     {
         t.AddAspNetCoreInstrumentation();
@@ -132,9 +134,7 @@ app.Use(async (context, next) =>
 
     using (LogContext.PushProperty("CorrelationId", correlationId))
     using (LogContext.PushProperty("RequestPath", context.Request.Path))
-    {
         await next().ConfigureAwait(false);
-    }
 });
 
 // Configure the HTTP request pipeline

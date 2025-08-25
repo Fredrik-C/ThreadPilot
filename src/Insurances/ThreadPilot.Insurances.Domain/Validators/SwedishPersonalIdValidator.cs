@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace ThreadPilot.Insurances.Domain.Validators;
@@ -25,20 +26,20 @@ public static class SwedishPersonalIdValidator
 
     public static ValidationResult Validate(string personalId)
     {
-        if (string.IsNullOrWhiteSpace(personalId))
-        {
-            return new ValidationResult(false, "Personal ID cannot be empty.");
-        }
+        if (string.IsNullOrWhiteSpace(personalId)) return new ValidationResult(false, "Personal ID cannot be empty.");
 
         var trimmed = personalId.Trim();
         var match = regex.Match(trimmed);
         if (!match.Success)
         {
-            return new ValidationResult(false, "Invalid Swedish personal ID format. Expected YYMMDD-XXXX or YYYYMMDD-XXXX.");
+            return new ValidationResult(false,
+                "Invalid Swedish personal ID format. Expected YYMMDD-XXXX or YYYYMMDD-XXXX.");
         }
 
         var fullDigits = match.Groups[1].Value + match.Groups[2].Value + match.Groups[3].Value;
-        return !ValidateChecksum(fullDigits) ? new ValidationResult(false, "Invalid Swedish personal ID checksum.") : new ValidationResult(true, null);
+        return !ValidateChecksum(fullDigits)
+            ? new ValidationResult(false, "Invalid Swedish personal ID checksum.")
+            : new ValidationResult(true, null);
     }
 
     private static bool ValidateChecksum(string digits)
@@ -53,7 +54,7 @@ public static class SwedishPersonalIdValidator
         var sum = 0;
         for (var i = 0; i < 9; i++)
         {
-            var digit = int.Parse(digits[i].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+            var digit = int.Parse(digits[i].ToString(), CultureInfo.InvariantCulture);
             // Double every second digit from right, but not the first (checksum)
             // From right to left, positions are 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
             // We double positions 9, 7, 5, 3, 1 (from right)
@@ -64,11 +65,12 @@ public static class SwedishPersonalIdValidator
                 if (digit > 9)
                     digit -= 9;
             }
+
             sum += digit;
         }
 
-        var checksum = (10 - (sum % 10)) % 10;
-        var expectedChecksum = int.Parse(digits[9].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+        var checksum = (10 - sum % 10) % 10;
+        var expectedChecksum = int.Parse(digits[9].ToString(), CultureInfo.InvariantCulture);
 
         return checksum == expectedChecksum;
     }

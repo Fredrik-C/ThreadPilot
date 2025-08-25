@@ -9,10 +9,7 @@ internal sealed class SwedishPersonalIdModelBinderProvider : IModelBinderProvide
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
         if (context.Metadata.ModelType == typeof(SwedishPersonalId))
-        {
             return new BinderTypeModelBinder(typeof(SwedishPersonalIdModelBinder));
-        }
         return null;
     }
 }
-

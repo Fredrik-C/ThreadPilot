@@ -5,22 +5,22 @@ namespace ThreadPilot.Insurances.Domain.ValueObjects;
 
 public sealed record SwedishPersonalId
 {
-    public string Value { get; }
-
     private SwedishPersonalId(string value)
     {
         Value = value;
     }
 
-    public override string ToString() => Value;
+    public string Value { get; }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 
     public static SwedishPersonalId Create(string input)
     {
         var result = SwedishPersonalIdValidator.Validate(input);
-        if (!result.IsValid)
-        {
-            throw new ValidationException(result.ErrorMessage ?? "Invalid Swedish personal ID.");
-        }
+        if (!result.IsValid) throw new ValidationException(result.ErrorMessage ?? "Invalid Swedish personal ID.");
 
         return new SwedishPersonalId(input.Trim());
     }
@@ -46,4 +46,3 @@ public sealed record SwedishPersonalId
         return true;
     }
 }
-

@@ -7,4 +7,3 @@ public sealed record EnrichedInsurance(
     Product Product,
     string? VehicleRegNo,
     VehicleInfo? Vehicle);
-

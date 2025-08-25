@@ -16,4 +16,3 @@ public record VehicleServiceResult(
     Vehicle? Vehicle,
     VehicleServiceError Error,
     string? ErrorMessage);
-

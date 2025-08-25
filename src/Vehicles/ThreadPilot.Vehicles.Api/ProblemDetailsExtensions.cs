@@ -1,37 +1,38 @@
 using Microsoft.AspNetCore.Mvc;
+using ThreadPilot.Vehicles.Application.Contracts;
 
 namespace ThreadPilot.Vehicles.Api;
 
 internal static class ProblemDetailsExtensions
 {
-    public static ProblemDetails ToProblemDetails(this Application.Contracts.VehicleServiceResult result)
+    public static ProblemDetails ToProblemDetails(this VehicleServiceResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
 
         var problemDetails = result.Error switch
         {
-            Application.Contracts.VehicleServiceError.InvalidRegistrationNumber => new ProblemDetails
+            VehicleServiceError.InvalidRegistrationNumber => new ProblemDetails
             {
                 Title = "Invalid Registration Number",
                 Detail = result.ErrorMessage,
                 Status = 400,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
             },
-            Application.Contracts.VehicleServiceError.NotFound => new ProblemDetails
+            VehicleServiceError.NotFound => new ProblemDetails
             {
                 Title = "Vehicle Not Found",
                 Detail = result.ErrorMessage,
                 Status = 404,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4"
             },
-            Application.Contracts.VehicleServiceError.Timeout => new ProblemDetails
+            VehicleServiceError.Timeout => new ProblemDetails
             {
                 Title = "Service Unavailable",
                 Detail = result.ErrorMessage,
                 Status = 503,
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.6.4"
             },
-            Application.Contracts.VehicleServiceError.InternalError => new ProblemDetails
+            VehicleServiceError.InternalError => new ProblemDetails
             {
                 Title = "Internal Server Error",
                 Detail = result.ErrorMessage,

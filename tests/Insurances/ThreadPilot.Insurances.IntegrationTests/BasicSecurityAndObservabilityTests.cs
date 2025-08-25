@@ -5,8 +5,6 @@ namespace ThreadPilot.Insurances.IntegrationTests;
 
 public class BasicSecurityAndObservabilityTests(TestWebAppFactory factory) : IClassFixture<TestWebAppFactory>
 {
-    private readonly TestWebAppFactory factory = factory;
-
     [Fact]
     public async Task HealthEndpointsReturnOk()
     {

@@ -7,22 +7,21 @@ namespace ThreadPilot.Vehicles.UnitTests.Features;
 
 public class AppSettingsFeatureToggleProviderTests
 {
-    private sealed class TestOptionsMonitor : IOptionsMonitor<FeatureFlagsOptions>
+    private sealed class TestOptionsMonitor(FeatureFlagsOptions initial) : IOptionsMonitor<FeatureFlagsOptions>
     {
-        private FeatureFlagsOptions _current;
-        private event Action<FeatureFlagsOptions, string?>? _onChange;
-        public TestOptionsMonitor(FeatureFlagsOptions initial) => _current = initial;
-        public FeatureFlagsOptions CurrentValue => _current;
-        public FeatureFlagsOptions Get(string? name) => _current;
+        private FeatureFlagsOptions current = initial;
+        private event Action<FeatureFlagsOptions, string?>? onChange;
+        public FeatureFlagsOptions CurrentValue => current;
+        public FeatureFlagsOptions Get(string? name) => current;
         public IDisposable OnChange(Action<FeatureFlagsOptions, string?> listener)
         {
-            _onChange += listener;
-            return new Dummy(() => _onChange -= listener);
+            onChange += listener;
+            return new Dummy(() => onChange -= listener);
         }
         public void Update(FeatureFlagsOptions next, string? name = null)
         {
-            _current = next;
-            _onChange?.Invoke(next, name);
+            current = next;
+            onChange?.Invoke(next, name);
         }
         private sealed class Dummy(Action dispose) : IDisposable { public void Dispose() => dispose(); }
     }
