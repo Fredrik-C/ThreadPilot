@@ -5,20 +5,26 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+$composeFile = Join-Path $PSScriptRoot "..\docker-compose.yml" | Resolve-Path -ErrorAction SilentlyContinue
+if (-not $composeFile) {
+    # Fallback to repo root relative to script when run in CI or different cwd
+    $composeFile = Join-Path (Get-Location) "docker-compose.yml"
+}
+
 function Compose-Up {
-    docker compose up --build -d
+    docker compose -f "$composeFile" up --build -d
 }
 
 function Compose-Down {
-    docker compose down -v --remove-orphans
+    docker compose -f "$composeFile" down -v --remove-orphans
 }
 
 function Compose-Logs {
-    docker compose logs -f --tail=200
+    docker compose -f "$composeFile" logs -f --tail=200
 }
 
 function Compose-Ps {
-    docker compose ps
+    docker compose -f "$composeFile" ps
 }
 
 function Smoke-Test {

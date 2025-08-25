@@ -58,13 +58,13 @@ jobs:
 
       - name: Build and start services
         run: |
-          docker compose up --build -d
+          docker compose -f ./docker-compose.yml up --build -d
           echo "Waiting for services to be ready..."
           sleep 10
 
       - name: Check if services are running
         run: |
-          docker compose ps
+          docker compose -f ./docker-compose.yml ps
 
       - name: Monitor Health Checks
         run: |
@@ -115,4 +115,4 @@ jobs:
       - name: Tear down services
         if: always()
         run: |
-          docker compose down -v --remove-orphans
+          docker compose -f ./docker-compose.yml down -v --remove-orphans
