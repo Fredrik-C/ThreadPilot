@@ -2,13 +2,6 @@
 
 Thank you for your interest in contributing! We are in Phase 08 (Documentation). Focus on improving developer experience: docs completeness, samples, and accuracy matching the code.
 
-## Scope for Phase 08
-
-- Update README with run/test instructions, endpoints, samples, error handling, security, observability, and architecture notes
-- Keep CONTRIBUTING current (this file)
-- Ensure docker-compose and local run are reflected accurately
-- Add missing samples or clarifications discovered during a dry-run
-
 ## Branching / PRs
 
 - Branch from `main` or the current phase branch as instructed in issues
