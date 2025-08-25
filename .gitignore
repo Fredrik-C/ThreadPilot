@@ -59,3 +59,12 @@ local.settings.json
 .NCrunch_ThreadPilot/StoredText/
 
 *.ncrunchsolution
+
+
+# Ensure docker-compose.yml is tracked in Git (override the ignore rule above)
+!/docker-compose.yml
+
+# Ensure PowerShell scripts are tracked
+!*.ps1
+!*.psm1
+!*.psd1

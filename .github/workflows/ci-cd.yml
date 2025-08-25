@@ -58,6 +58,10 @@ jobs:
 
       - name: Build and start services
         run: |
+          echo "PWD: $(pwd)"
+          ls -la
+          ls -la ./src/Vehicles/ThreadPilot.Vehicles.Api || true
+          ls -la ./src/Insurances/ThreadPilot.Insurances.Api || true
           docker compose -f ./docker-compose.yml up --build -d
           echo "Waiting for services to be ready..."
           sleep 10
