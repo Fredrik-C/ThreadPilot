@@ -226,6 +226,10 @@ To ensure the quality, reliability, and maintainability of the ThreadPilot servi
 Resilience policies should be added when protocol is known.
 - Consider shared building blocks (e.g., FeatureToggleProvider) across services while preserving service autonomy.
 
+## Contribution guidelines
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Previous experience of similar projects
 
 At my current assignment we have migrated from a monolith consising of 3 major services to domain focused microservices.
