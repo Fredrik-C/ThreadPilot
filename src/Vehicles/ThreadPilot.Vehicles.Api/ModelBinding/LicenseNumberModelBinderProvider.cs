@@ -9,10 +9,7 @@ internal sealed class LicenseNumberModelBinderProvider : IModelBinderProvider
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
         if (context.Metadata.ModelType == typeof(LicenseNumber))
-        {
             return new BinderTypeModelBinder(typeof(LicenseNumberModelBinder));
-        }
         return null;
     }
 }
-

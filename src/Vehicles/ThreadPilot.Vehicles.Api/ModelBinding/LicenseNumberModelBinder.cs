@@ -29,4 +29,3 @@ internal sealed class LicenseNumberModelBinder : IModelBinder
         return Task.CompletedTask;
     }
 }
-

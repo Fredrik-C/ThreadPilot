@@ -1,7 +1,4 @@
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ThreadPilot.Insurances.Application.Clients;
@@ -20,27 +17,28 @@ public sealed class VehiclesApiClient : IVehiclesApiClient
     private readonly HttpClient _httpClient;
     private readonly ILogger<VehiclesApiClient> _logger;
 
-    public VehiclesApiClient(HttpClient httpClient, IOptions<VehiclesApiClientOptions> options, ILogger<VehiclesApiClient> logger)
+    public VehiclesApiClient(HttpClient httpClient, IOptions<VehiclesApiClientOptions> options,
+        ILogger<VehiclesApiClient> logger)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new System.Uri(options.Value.BaseAddress, System.UriKind.Absolute);
+        _httpClient.BaseAddress = new Uri(options.Value.BaseAddress, UriKind.Absolute);
         _logger = logger;
     }
 
-    public async Task<VehicleInfo?> GetVehicleAsync(string registrationNumber, CancellationToken cancellationToken = default)
+    public async Task<VehicleInfo?> GetVehicleAsync(string registrationNumber,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync(new Uri($"/api/vehicles/{registrationNumber}", UriKind.Relative), cancellationToken).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
+            var response = await _httpClient
+                .GetAsync(new Uri($"/api/vehicles/{registrationNumber}", UriKind.Relative), cancellationToken)
+                .ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode) return null;
 
-            var dto = await response.Content.ReadFromJsonAsync<VehicleInfo>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var dto = await response.Content.ReadFromJsonAsync<VehicleInfo>(cancellationToken).ConfigureAwait(false);
             return dto;
         }
         catch (HttpRequestException)
@@ -50,4 +48,3 @@ public sealed class VehiclesApiClient : IVehiclesApiClient
         }
     }
 }
-

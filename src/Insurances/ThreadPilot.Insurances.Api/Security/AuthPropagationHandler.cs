@@ -8,7 +8,8 @@ internal sealed class AuthPropagationHandler(IHttpContextAccessor httpContextAcc
 {
     private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var ctx = httpContextAccessor.HttpContext;
@@ -18,13 +19,10 @@ internal sealed class AuthPropagationHandler(IHttpContextAccessor httpContextAcc
             {
                 var raw = authValues.ToString();
                 if (!string.IsNullOrWhiteSpace(raw) && AuthenticationHeaderValue.TryParse(raw, out var parsed))
-                {
                     request.Headers.Authorization = parsed;
-                }
             }
         }
 
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }
-

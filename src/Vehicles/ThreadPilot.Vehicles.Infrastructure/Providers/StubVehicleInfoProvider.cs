@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using ThreadPilot.Vehicles.Domain;
 
@@ -17,7 +13,8 @@ public class StubVehicleInfoProvider : IVehicleInfoProvider
         _options = options.Value;
     }
 
-    public async Task<Vehicle?> GetVehicleInfoAsync(string registrationNumber, CancellationToken cancellationToken = default)
+    public async Task<Vehicle?> GetVehicleInfoAsync(string registrationNumber,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registrationNumber);
 
@@ -27,12 +24,16 @@ public class StubVehicleInfoProvider : IVehicleInfoProvider
             switch (scenario.Type)
             {
                 case ScenarioType.Timeout:
-                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? _options.TimeoutDelayMs), cancellationToken).ConfigureAwait(false);
-                    throw new TimeoutException(scenario.ErrorMessage ?? "Simulated timeout from external vehicle system");
+                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? _options.TimeoutDelayMs),
+                        cancellationToken).ConfigureAwait(false);
+                    throw new TimeoutException(
+                        scenario.ErrorMessage ?? "Simulated timeout from external vehicle system");
                 case ScenarioType.Error:
-                    throw new InvalidOperationException(scenario.ErrorMessage ?? "Simulated error from external vehicle system");
+                    throw new InvalidOperationException(scenario.ErrorMessage ??
+                                                        "Simulated error from external vehicle system");
                 case ScenarioType.Slow:
-                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? _options.SlowDelayMs), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? _options.SlowDelayMs),
+                        cancellationToken).ConfigureAwait(false);
                     return scenario.Payload ?? CreateDefaultVehicle(registrationNumber);
                 case ScenarioType.NotFound:
                     return null;

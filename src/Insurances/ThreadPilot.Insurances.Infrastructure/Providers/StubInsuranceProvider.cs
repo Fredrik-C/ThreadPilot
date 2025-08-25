@@ -13,7 +13,8 @@ public class StubInsuranceProvider : IInsuranceProvider
         this.options = options.Value;
     }
 
-    public async Task<IList<Insurance>> GetInsurancesByPersonalIdAsync(string personalId, CancellationToken cancellationToken = default)
+    public async Task<IList<Insurance>> GetInsurancesByPersonalIdAsync(string personalId,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(personalId);
 
@@ -23,12 +24,16 @@ public class StubInsuranceProvider : IInsuranceProvider
             switch (scenario.Type)
             {
                 case ScenarioType.Timeout:
-                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? options.TimeoutDelayMs), cancellationToken).ConfigureAwait(false);
-                    throw new TimeoutException(scenario.ErrorMessage ?? "Simulated timeout from external insurance system");
+                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? options.TimeoutDelayMs),
+                        cancellationToken).ConfigureAwait(false);
+                    throw new TimeoutException(scenario.ErrorMessage ??
+                                               "Simulated timeout from external insurance system");
                 case ScenarioType.Error:
-                    throw new InvalidOperationException(scenario.ErrorMessage ?? "Simulated error from external insurance system");
+                    throw new InvalidOperationException(scenario.ErrorMessage ??
+                                                        "Simulated error from external insurance system");
                 case ScenarioType.Slow:
-                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? options.SlowDelayMs), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromMilliseconds(scenario.DelayMs ?? options.SlowDelayMs),
+                        cancellationToken).ConfigureAwait(false);
                     return scenario.Payload ?? CreateDefaultInsurances();
                 case ScenarioType.Empty:
                     return [];
@@ -48,16 +53,14 @@ public class StubInsuranceProvider : IInsuranceProvider
         return
         [
             new Insurance(
-                new Product("Home Insurance", 30.00m, "Standard terms"),
-                null),
+                new Product("Home Insurance", 30.00m, "Standard terms")),
 
             new Insurance(
                 new Product("Car Insurance", 20.00m, "Comprehensive coverage"),
                 "ABC123"),
 
             new Insurance(
-                new Product("Pet Insurance", 10.00m, "For dogs and cats"),
-                null)
+                new Product("Pet Insurance", 10.00m, "For dogs and cats"))
         ];
     }
 }

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using ThreadPilot.Insurances.Application.Clients;
-using VehicleInfo = ThreadPilot.Insurances.Application.Models.VehicleInfo;
-using ThreadPilot.Insurances.Domain;
 using ThreadPilot.Insurances.Application.Contracts;
+using ThreadPilot.Insurances.Domain;
+using VehicleInfo = ThreadPilot.Insurances.Application.Models.VehicleInfo;
 
 namespace ThreadPilot.Insurances.Application.Services;
 
@@ -15,7 +15,6 @@ public class InsuranceService(
         string personalId,
         CancellationToken cancellationToken = default)
     {
-
         IList<Insurance> insurances;
         try
         {
@@ -25,12 +24,14 @@ public class InsuranceService(
         catch (TimeoutException ex)
         {
             logger.LogWarning(ex, "Timeout while retrieving insurances for personal ID {PersonalId}", personalId);
-            return new InsuranceServiceResult(false, null, InsuranceServiceError.Timeout, "Timeout while retrieving insurances");
+            return new InsuranceServiceResult(false, null, InsuranceServiceError.Timeout,
+                "Timeout while retrieving insurances");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while retrieving insurances for personal ID {PersonalId}", personalId);
-            return new InsuranceServiceResult(false, null, InsuranceServiceError.InternalError, "Error while retrieving insurances");
+            return new InsuranceServiceResult(false, null, InsuranceServiceError.InternalError,
+                "Error while retrieving insurances");
         }
 
         // Parallel enrichment for car insurances
@@ -47,13 +48,15 @@ public class InsuranceService(
             : [];
 
         var enriched = results
-            .Select(tuple => new EnrichedInsurance(tuple.Insurance.Product, tuple.Insurance.VehicleRegNo, tuple.Vehicle))
+            .Select(tuple =>
+                new EnrichedInsurance(tuple.Insurance.Product, tuple.Insurance.VehicleRegNo, tuple.Vehicle))
             .ToList();
 
-        return new InsuranceServiceResult(true, enriched, InsuranceServiceError.None, null, IsPartial: false);
+        return new InsuranceServiceResult(true, enriched, InsuranceServiceError.None, null);
     }
 
-    private async Task<(Insurance Insurance, VehicleInfo? Vehicle)> EnrichAsync(Insurance insurance, string reg, CancellationToken ct)
+    private async Task<(Insurance Insurance, VehicleInfo? Vehicle)> EnrichAsync(Insurance insurance, string reg,
+        CancellationToken ct)
     {
         try
         {

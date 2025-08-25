@@ -14,6 +14,7 @@ public sealed class AppSettingsFeatureToggleProvider : IFeatureToggleProvider
     }
 
     public bool TryGet(string featureName, out bool isEnabled)
-        => _flags.TryGetValue(featureName, out isEnabled);
+    {
+        return _flags.TryGetValue(featureName, out isEnabled);
+    }
 }
-

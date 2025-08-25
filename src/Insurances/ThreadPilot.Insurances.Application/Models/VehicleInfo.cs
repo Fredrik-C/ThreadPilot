@@ -6,4 +6,3 @@ public sealed record VehicleInfo(
     string Model,
     int Year,
     string FuelType);
-

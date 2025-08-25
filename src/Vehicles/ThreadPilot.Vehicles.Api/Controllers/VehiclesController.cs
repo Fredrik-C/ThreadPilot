@@ -1,19 +1,19 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
-using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Api.DTOs;
+using ThreadPilot.Vehicles.Application.Services;
 using ThreadPilot.Vehicles.Domain.ValueObjects;
 
 namespace ThreadPilot.Vehicles.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[SuppressMessage("Design", "CA1515", Justification = "Public controller required for MVC discovery and integration tests")]
+[SuppressMessage("Design", "CA1515",
+    Justification = "Public controller required for MVC discovery and integration tests")]
 public sealed class VehiclesController(VehicleService vehicleService) : ControllerBase
 {
-
     /// <summary>
-    /// Gets vehicle information by registration number
+    ///     Gets vehicle information by registration number
     /// </summary>
     /// <param name="registrationNumber">The vehicle registration number</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -27,7 +27,8 @@ public sealed class VehiclesController(VehicleService vehicleService) : Controll
         [ModelBinder] LicenseNumber registrationNumber,
         CancellationToken cancellationToken = default)
     {
-        var result = await vehicleService.GetVehicleAsync(registrationNumber.Value, cancellationToken).ConfigureAwait(false);
+        var result = await vehicleService.GetVehicleAsync(registrationNumber.Value, cancellationToken)
+            .ConfigureAwait(false);
 
         if (result.IsSuccess)
         {

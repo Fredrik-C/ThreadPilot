@@ -7,13 +7,13 @@ namespace ThreadPilot.Insurances.IntegrationTests;
 
 public class InsurancesApiTests : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program> _factory;
-    private readonly HttpClient _client;
+    private readonly WebApplicationFactory<Program> factory;
+    private readonly HttpClient client;
 
     public InsurancesApiTests(WebApplicationFactory<Program> factory)
     {
-        _factory = factory;
-        _client = _factory.CreateClient();
+        this.factory = factory;
+        client = this.factory.CreateClient();
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class InsurancesApiTests : IClassFixture<WebApplicationFactory<Program>>
         var personalId = "19640823-3234";
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/api/insurances/{personalId}", UriKind.Relative));
+        var response = await client.GetAsync(new Uri($"/api/insurances/{personalId}", UriKind.Relative));
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -38,7 +38,7 @@ public class InsurancesApiTests : IClassFixture<WebApplicationFactory<Program>>
         var personalId = "invalid";
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/api/insurances/{personalId}", UriKind.Relative));
+        var response = await client.GetAsync(new Uri($"/api/insurances/{personalId}", UriKind.Relative));
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -48,7 +48,7 @@ public class InsurancesApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetInsurances_WithEmptyPersonalId_ShouldReturnBadRequest()
     {
         // Act
-        var response = await _client.GetAsync(new Uri("/api/insurances", UriKind.Relative));
+        var response = await client.GetAsync(new Uri("/api/insurances", UriKind.Relative));
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);

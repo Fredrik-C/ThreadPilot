@@ -15,4 +15,3 @@ public record InsuranceServiceResult(
     InsuranceServiceError Error,
     string? ErrorMessage,
     bool IsPartial = false);
-

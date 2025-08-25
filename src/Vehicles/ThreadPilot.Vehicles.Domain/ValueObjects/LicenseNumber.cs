@@ -1,26 +1,26 @@
-using ThreadPilot.Vehicles.Domain.Validators;
 using ThreadPilot.Vehicles.Domain.Exceptions;
+using ThreadPilot.Vehicles.Domain.Validators;
 
 namespace ThreadPilot.Vehicles.Domain.ValueObjects;
 
 public sealed record LicenseNumber
 {
-    public string Value { get; }
-
     private LicenseNumber(string value)
     {
         Value = value;
     }
 
-    public override string ToString() => Value;
+    public string Value { get; }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 
     public static LicenseNumber Create(string input)
     {
         var result = SwedishVehicleRegistrationValidator.Validate(input);
-        if (!result.IsValid)
-        {
-            throw new ValidationException(result.ErrorMessage ?? "Invalid registration number.");
-        }
+        if (!result.IsValid) throw new ValidationException(result.ErrorMessage ?? "Invalid registration number.");
 
         return new LicenseNumber(input.Trim());
     }
@@ -46,4 +46,3 @@ public sealed record LicenseNumber
         return true;
     }
 }
-

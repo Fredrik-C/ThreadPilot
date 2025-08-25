@@ -24,9 +24,7 @@ public static class SwedishVehicleRegistrationValidator
     public static ValidationResult Validate(string registrationNumber)
     {
         if (string.IsNullOrWhiteSpace(registrationNumber))
-        {
             return new ValidationResult(false, "Registration number cannot be empty.");
-        }
 
         var trimmed = registrationNumber.Trim();
 
@@ -34,8 +32,8 @@ public static class SwedishVehicleRegistrationValidator
         return trimmed.Length is < 2 or > 7
             ? new ValidationResult(false, "Registration number must be between 2 and 7 characters.")
             : regex.IsMatch(trimmed)
-            ? new ValidationResult(true, null)
-            : new ValidationResult(false, "Invalid Swedish vehicle registration number format.");
+                ? new ValidationResult(true, null)
+                : new ValidationResult(false, "Invalid Swedish vehicle registration number format.");
     }
 }
 

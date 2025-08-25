@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -8,20 +10,22 @@ using Serilog.Context;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using ThreadPilot.Insurances.Api.Extensions;
+using ThreadPilot.Insurances.Api.ModelBinding;
+using ThreadPilot.Insurances.Application.Clients;
 using ThreadPilot.Insurances.Application.Services;
 using ThreadPilot.Insurances.Domain;
-using ThreadPilot.Insurances.Infrastructure.Providers;
 using ThreadPilot.Insurances.Infrastructure.Clients;
-using Microsoft.AspNetCore.Mvc;
-using ThreadPilot.Insurances.Api.ModelBinding;
+using ThreadPilot.Insurances.Infrastructure.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Bind options
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.sectionName));
 builder.Services.Configure<StubInsuranceOptions>(builder.Configuration.GetSection(StubInsuranceOptions.sectionName));
-builder.Services.Configure<VehiclesApiClientOptions>(builder.Configuration.GetSection(VehiclesApiClientOptions.SectionName));
-var securityOptions = builder.Configuration.GetSection(SecurityOptions.sectionName).Get<SecurityOptions>() ?? new SecurityOptions();
+builder.Services.Configure<VehiclesApiClientOptions>(
+    builder.Configuration.GetSection(VehiclesApiClientOptions.SectionName));
+var securityOptions = builder.Configuration.GetSection(SecurityOptions.sectionName).Get<SecurityOptions>() ??
+                      new SecurityOptions();
 
 // Serilog configuration: JSON console, enrich with correlation
 Log.Logger = new LoggerConfiguration()
@@ -58,14 +62,14 @@ builder.Services.AddSwaggerGen();
 
 // Health checks (basic for now; DB and external deps can be added in later phases)
 builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+    .AddCheck("self", () => HealthCheckResult.Healthy());
 
 // Insurance services
 builder.Services.AddScoped<IInsuranceProvider, StubInsuranceProvider>();
 builder.Services.AddScoped<InsuranceService>();
 builder.Services.AddHttpClient<VehiclesApiClient, VehiclesApiClient>();
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<ThreadPilot.Insurances.Application.Clients.IVehiclesApiClient>(sp => sp.GetRequiredService<VehiclesApiClient>());
+builder.Services.AddScoped<IVehiclesApiClient>(sp => sp.GetRequiredService<VehiclesApiClient>());
 
 // AuthN/AuthZ with toggle
 if (securityOptions.Enabled)
@@ -75,8 +79,10 @@ if (securityOptions.Enabled)
         .AddJwtBearer(options =>
         {
             // Configurable authority/audience via appsettings; placeholders for now
-            options.Authority = builder.Configuration[$"{SecurityOptions.sectionName}:Authority"]; // e.g., https://login.example.com/
-            options.Audience = builder.Configuration[$"{SecurityOptions.sectionName}:Audience"];   // e.g., api://insurances
+            options.Authority =
+                builder.Configuration[$"{SecurityOptions.sectionName}:Authority"]; // e.g., https://login.example.com/
+            options.Audience =
+                builder.Configuration[$"{SecurityOptions.sectionName}:Audience"]; // e.g., api://insurances
             options.RequireHttpsMetadata = false;
         });
     builder.Services.AddAuthorization(options =>
@@ -105,7 +111,7 @@ else
 
 // OpenTelemetry: traces and metrics
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(r => r.AddService(serviceName: "ThreadPilot.Insurances.Api"))
+    .ConfigureResource(r => r.AddService("ThreadPilot.Insurances.Api"))
     .WithTracing(t =>
     {
         t.AddAspNetCoreInstrumentation();
@@ -136,9 +142,7 @@ app.Use(async (context, next) =>
 
     using (LogContext.PushProperty("CorrelationId", correlationId))
     using (LogContext.PushProperty("RequestPath", context.Request.Path))
-    {
         await next().ConfigureAwait(false);
-    }
 });
 
 // Configure the HTTP request pipeline

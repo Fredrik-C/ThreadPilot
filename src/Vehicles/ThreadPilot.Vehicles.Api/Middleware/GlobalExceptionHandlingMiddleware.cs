@@ -1,14 +1,15 @@
 using System.Diagnostics;
-using ThreadPilot.Vehicles.Domain.Exceptions;
 using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using ThreadPilot.Vehicles.Domain.Exceptions;
 
 namespace ThreadPilot.Vehicles.Api.Middleware;
 
 internal sealed class GlobalExceptionHandlingMiddleware
 {
-    private readonly RequestDelegate next;
     private readonly ILogger<GlobalExceptionHandlingMiddleware> logger;
+    private readonly RequestDelegate next;
 
     public GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlingMiddleware> logger)
     {
@@ -157,14 +158,12 @@ internal sealed class GlobalExceptionHandlingMiddleware
         // Add observability context
         problemDetails.Extensions["traceId"] = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
         if (context.Request.Headers.TryGetValue("X-Correlation-ID", out var cid))
-        {
             problemDetails.Extensions["correlationId"] = cid.ToString();
-        }
 
         context.Response.StatusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
         context.Response.ContentType = "application/problem+json";
 
-        var json = System.Text.Json.JsonSerializer.Serialize(problemDetails);
+        var json = JsonSerializer.Serialize(problemDetails);
         await context.Response.WriteAsync(json).ConfigureAwait(false);
     }
 }

@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Primitives;
 using Shouldly;
 using ThreadPilot.Vehicles.Api.ModelBinding;
@@ -30,9 +28,8 @@ public class LicenseNumberModelBinderTests
 
     private sealed class TestValueProvider(Dictionary<string, StringValues> values) : IValueProvider
     {
-        private readonly Dictionary<string, StringValues> _values = values;
-        public bool ContainsPrefix(string prefix) => _values.Keys.Any(k => string.Equals(k, prefix, StringComparison.OrdinalIgnoreCase) || k.StartsWith(prefix + ".", StringComparison.OrdinalIgnoreCase));
-        public ValueProviderResult GetValue(string key) => _values.TryGetValue(key, out var v) ? new ValueProviderResult(v) : ValueProviderResult.None;
+        public bool ContainsPrefix(string prefix) => values.Keys.Any(k => string.Equals(k, prefix, StringComparison.OrdinalIgnoreCase) || k.StartsWith(prefix + ".", StringComparison.OrdinalIgnoreCase));
+        public ValueProviderResult GetValue(string key) => values.TryGetValue(key, out var v) ? new ValueProviderResult(v) : ValueProviderResult.None;
     }
 
     [Fact]
