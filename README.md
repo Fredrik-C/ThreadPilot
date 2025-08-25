@@ -30,6 +30,8 @@ Option A: docker-compose (recommended)
 4) Smoke test: PowerShell scripts/compose.ps1 -cmd smoke
 5) Tear down: docker compose down -v --remove-orphans
 
+> A `docker-compose.yml` file is included in the repository for easy local development and testing. The compose file defines two services: `vehicles-api` and `insurances-api`, with appropriate port mappings and environment variables.
+
 Option B: dotnet run (both services)
 
 - Terminal 1

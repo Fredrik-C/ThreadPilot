@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  vehicles-api:
+    build:
+      context: .
+      dockerfile: "./src/Vehicles/ThreadPilot.Vehicles.Api/Dockerfile"
+    ports:
+      - "5123:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Security__Enabled=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  insurances-api:
+    build:
+      context: .
+      dockerfile: "./src/Insurances/ThreadPilot.Insurances.Api/Dockerfile"
+    ports:
+      - "5261:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Security__Enabled=false
+      - VehiclesApi__BaseAddress=http://vehicles-api:8080
+    depends_on:
+      vehicles-api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
